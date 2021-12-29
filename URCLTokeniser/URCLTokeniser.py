@@ -143,7 +143,7 @@ def URCLTokeniser(fileName: str = "input.urcl") -> tuple[list, tuple]:
                     text = line[index]
                 index += 1
                 if index < len(line):
-                    while line[index] not in (" ", "[", "]", "&", "%", "#", "$", "R", "r", "M", "m", "."):
+                    while line[index] not in (" ", "[", "]", "&", "%", "#", "$", "."): # will fail if incorrect spacing in code
                         text += line[index]
                         index += 1
                         if index >= len(line):

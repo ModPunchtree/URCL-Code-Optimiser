@@ -1,3 +1,2 @@
 
-OUT %HEX -0x01
-OUT %BIN 0b101
+DIV R1 255 5
