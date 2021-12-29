@@ -2,14 +2,9 @@
 # input MINREG, BITS, list of tokens
 
 # clean code
-    # 1 delete multiline comments
-    # 2 delete line comments
-    # 3 delete empty lines
-    # 4 convert double spaces to single spaces, twice
-    # 5 convert relatives to labels
-
-# delete duplicate labels
-# move DW values to the end of the program
+    # convert relatives to labels
+    # delete duplicate labels
+    # move DW values to the end of the program
 
 # label/branching optimisations
     # 1 delete duplicate labels
@@ -19,127 +14,335 @@
 # constant folding
 
 # single instruction optimisations
-    #  1 ADD
-    #  2 RSH
-    #  3 LOD
-    #  4 STR
-    #  5 BGE
-    #  6 NOR
-    #  7 SUB
-    #  8 JMP
-    #  9 MOV
-    # 10 NOP
-    # 11 IMM
-    # 12 LSH
-    # 13 INC
-    # 14 DEC
-    # 15 NEG
-    # 16 AND
-    # 17 OR
-    # 18 NOT
-    # 19 XNOR
-    # 20 XOR
-    # 21 NAND
-    # 22 BRL
-    # 23 BRG
-    # 24 BRE
-    # 25 BNE
-    # 26 BOD
-    # 27 BEV
-    # 28 BLE
-    # 29 BRZ
-    # 30 BNZ
-    # 31 BRN
-    # 32 BRP
-    # 33 PSH
-    # 34 POP
-    # 35 CAL
-    # 36 RET
-    # 37 HLT
-    # 38 CPY
-    # 39 BRC
-    # 40 BNC
+    #  1 ADD   -> LSH MOV INC DEC NOP
+    #  2 RSH   -> MOV NOP
+    #  3 LOD   -> NOP
+    #  4 STR   -> 
+    #  5 BGE   -> JMP BRZ BNZ BRN BRP NOP
+    #  6 NOR   -> NOT MOV NOP
+    #  7 SUB   -> MOV IMM NEG DEC INC NOP
+    #  8 JMP   -> 
+    #  9 MOV   -> IMM NOP
+    # 10 NOP   -> delete
+    # 11 IMM   -> NOP
+    # 12 LSH   -> NOP
+    # 13 INC   -> IMM NOP
+    # 14 DEC   -> IMM NOP
+    # 15 NEG   -> NOP
+    # 16 AND   -> MOV IMM NOP
+    # 17 OR    -> MOV IMM NOP
+    # 18 NOT   -> IMM NOP
+    # 19 XNOR  -> MOV IMM NOT NOP
+    # 20 XOR   -> MOV IMM NOT NOP
+    # 21 NAND  -> NOT IMM MOV NOP
+    # 22 BRL   -> JMP BRZ BNZ BRN BRP NOP
+    # 23 BRG   -> JMP BRZ BNZ BRN BRP NOP
+    # 24 BRE   -> JMP BRZ NOP
+    # 25 BNE   -> JMP BRZ NOP
+    # 26 BOD   -> JMP NOP
+    # 27 BEV   -> JMP NOP
+    # 28 BLE   -> JMP BRZ BNZ NOP
+    # 29 BRZ   -> JMP NOP
+    # 30 BNZ   -> JMP NOP
+    # 31 BRN   -> JMP NOP
+    # 32 BRP   -> JMP NOP
+    # 33 PSH   -> 
+    # 34 POP   -> INC
+    # 35 CAL   -> 
+    # 36 RET   -> 
+    # 37 HLT   -> 
+    # 38 CPY   -> NOP
+    # 39 BRC   -> JMP BNZ NOP
+    # 40 BNC   -> JMP BRZ NOP
     
-    # 41 MLT
-    # 42 DIV
-    # 43 MOD
-    # 44 BSR
-    # 45 BSL
-    # 46 SRS
-    # 47 BSS
-    # 48 SETE
-    # 49 SETNE
-    # 50 SETG
-    # 51 SETL
-    # 52 SETGE
-    # 53 SETLE
-    # 54 SETC
-    # 55 SETNC
-    # 56 LLOD
-    # 57 LSTR
+    # 41 MLT   -> LSH BSL MOV NOP
+    # 42 DIV   -> RSH BSR MOV IMM NOP
+    # 43 MOD   -> AND IMM NOP
+    # 44 BSR   -> RSH MOV NOP
+    # 45 BSL   -> LSH MOV NOP
+    # 46 SRS   -> NOP
+    # 47 BSS   -> SRS BSR MOV NOP
+    # 48 SETE  -> IMM NOP
+    # 49 SETNE -> IMM NOP
+    # 50 SETG  -> IMM NOP
+    # 51 SETL  -> IMM NOP
+    # 52 SETGE -> IMM NOP
+    # 53 SETLE -> IMM NOP
+    # 54 SETC  -> IMM NOP
+    # 55 SETNC -> IMM NOP
+    # 56 LLOD  -> LOD NOP
+    # 57 LSTR  -> STR
     
-    # 58 IN
-    # 59 OUT
-    
-# single instruction optimisations
-    # 1  ADD   -> LSH, MOV, INC, DEC, NOP
-    # 2  RSH   -> MOV, NOP
-    # 3  LOD   -> NOP
-    # 4  STR   -> 
-    # 5  JMP   -> 
-    # 6  BGE   -> JMP, BRZ, BNZ, BRN, BRP, NOP
-    # 7  NOR   -> NOT, MOV, NOP
-    # 8  SUB   -> MOV, NEG, DEC, INC, NOP
-    # 9  MOV   -> IMM, NOP
-    # 10 LSH   -> NOP
-    # 11 DEC   -> NOP
-    # 12 NEG   -> NOP
-    # 13 AND   -> MOV, NOP
-    # 14 OR    -> MOV, NOP
-    # 15 NOT   -> MOV
-    # 16 XNOR  -> XOR, NOT, MOV, NOP
-    # 17 XOR   -> MOV, NOT, NOP
-    # 18 NAND  -> NOT, MOV, NOP
-    # 19 BRL   -> JMP, BRZ, BNZ, BRN, BRP, NOP
-    # 20 BRG   -> JMP, BRZ, BNZ, BRN, BRP, NOP
-    # 21 BRE   -> JMP, BRZ, NOP
-    # 22 BNE   -> JMP, BNZ, NOP
-    # 23 BOD   -> JMP, NOP
-    # 24 BEV   -> JMP, NOP
-    # 25 BLE   -> JMP, BRZ, BNZ, NOP
-    # 26 BRZ   -> JMP, NOP
-    # 27 BNZ   -> JMP, NOP
-    # 28 BRN   -> JMP, NOP
-    # 29 BRP   -> JMP, NOP
-    # 30 PSH   -> 
-    # 31 POP   -> INC
-    # 32 CAL   -> 
-    # 33 RET   -> 
-    # 34 HLT   -> 
-    # 35 MLT   -> LSH, BSL, MOV, NOP
-    # 36 DIV   -> RSH, BSR, MOV, NOP
-    # 37 MOD   -> AND, MOV, NOP
-    # 38 BSR   -> RSH, MOV, NOP
-    # 39 BSL   -> LSH, MOV, NOP
-    # 40 SRS   -> MOV, NOP
-    # 41 BSS   -> SRS, BSR, MOV, NOP
-    # 42 SETE  -> MOV, NOP
-    # 43 SETNE -> MOV, NOP
-    # 44 SETG  -> MOV, NOP
-    # 45 SETL  -> MOV, NOP
-    # 46 SETGE -> MOV, NOP
-    # 47 SETLE -> MOV, NOP
-    # 48 INC   -> MOV, NOP
-    # 49 NOP   -> 
-    # 50 IMM   -> NOP
+    # 58 IN    -> NOP
+    # 59 OUT   -> 
 
-# miscellaneous optimisations
+# projectImmediates (send values from IMM instructions forward)
+
+# pair optimisations
     # SETBRANCH
     # LODSTR
     # STRLOD
     # PSHPOP
     # POPPSH
+    
+    # ADDADD
+    # SUBSUB
+    # INCINC
+    # DECDEC
+    # ADDSUB
+    # ADDINC
+    # ADDDEC
+    # SUBINC
+    # SUBDEC
+    # INCDEC
+    # SUBADD
+    # INCADD
+    # DECADD
+    # INCSUB
+    # DECSUB
+    # DECINC
+    
+    # MLTMLT
+    # DIVDIV
+    
+    # LSHLSH
+    # RSHRSH
+    # SRSSRS
+    # BSLBSL
+    # BSRBSR
+    # BSSBSS
+    
+    # LSHBSL
+    # BSLLSH
+    # RSHBSR
+    # BSRRSH
+    # SRSBSS
+    # BSSSRS
+    
+    # simplify
+    # RSHSRS
+    # RSHBSS
+    
+    # bitmasks
+    # LSHRSH
+    # RSHLSH
+    # LSHBSR
+    # BSRLSH
+    # RSHBSL
+    # BSLRSH
+    # BSLBSR
+    # BSRBSL
+    
+    # ANDAND
+    
+    # XORXOR
 
 # optimisation by emulation
     # only for short sections of code with no LOD STR LLOD LSTR PSH POP CAL RET HLT JMP BRANCH IN OUT
 
+######################################################################################################
+######################################################################################################
+######################################################################################################
+
+def convertRelativesToLabels(tokens: list[list[str]], uniqueNumber: int = 0) -> list[list[str]]:
+    """
+    Takes sanitised, tokenised URCL code and optionally a unique number for the label name.
+    
+    Returns URCL code with all relatives converted into labels. 
+    """
+    
+    for index in range(len(tokens)):
+        line = tokens[index]
+        for tokenIndex, token in enumerate(line):
+            if token.startswith("~"):
+                relative = token
+                number = int(relative[2: ], 0)
+                if relative[1] == "+":
+                    while number > 0:
+                        index += 1
+                        while tokens[index][0].startswith("."):
+                            index += 1
+                        number -= 1
+                    tokens.insert(index, [f".__relative__{uniqueNumber}"])
+                else:
+                    while (number + 1) > 0:
+                        index -= 1
+                        while tokens[index][0].startswith("."):
+                            index -= 1
+                        number -= 1
+                    tokens.insert(index, [f".__relative__{uniqueNumber}"])
+                line[tokenIndex] = f".__relative__{uniqueNumber}"
+                uniqueNumber += 1
+                return convertRelativesToLabels(tokens, uniqueNumber)
+    return tokens
+
+def deleteDuplicateLabels(tokens: list[list[str]]) -> list[list[str]]:
+    """
+    Takes sanitised, tokenised URCL code.
+    
+    Returns URCL code with all duplicated labels removed.
+    """
+    
+    index = 0
+    while index < len(tokens) - 1:
+        line = tokens[index]
+        line2 = tokens[index + 1]
+        if line[0].startswith(".") and line2[0].startswith("."):
+            tokens.pop(index + 1)
+        else:
+            index += 1
+    
+    return tokens
+
+# input MINREG, BITS, list of tokens
+def URCLOptimiser(tokens: list[list[str]], rawHeaders: tuple[int, str, int, int, int, str]) -> tuple[list[list[str]], tuple[int, str, int, int, int, str]]:
+    """
+    Takes sanitised, tokenised URCL code.
+    
+    Returns optimised URCL code and optimised headers.
+    """
+
+    # clean code
+    # convert relatives to labels
+    tokens = convertRelativesToLabels(tokens)
+    
+    # delete duplicate labels
+    tokens = deleteDuplicateLabels(tokens)
+    
+    # move DW values to the end of the program
+
+# label/branching optimisations
+    # 1 delete duplicate labels
+    # 2 shortcut branches
+    # 3 delete useless branches
+
+# constant folding
+
+# single instruction optimisations
+    #  1 ADD   -> LSH MOV INC DEC NOP
+    #  2 RSH   -> MOV NOP
+    #  3 LOD   -> NOP
+    #  4 STR   -> 
+    #  5 BGE   -> JMP BRZ BNZ BRN BRP NOP
+    #  6 NOR   -> NOT MOV NOP
+    #  7 SUB   -> MOV IMM NEG DEC INC NOP
+    #  8 JMP   -> 
+    #  9 MOV   -> IMM NOP
+    # 10 NOP   -> delete
+    # 11 IMM   -> NOP
+    # 12 LSH   -> NOP
+    # 13 INC   -> IMM NOP
+    # 14 DEC   -> IMM NOP
+    # 15 NEG   -> NOP
+    # 16 AND   -> MOV IMM NOP
+    # 17 OR    -> MOV IMM NOP
+    # 18 NOT   -> IMM NOP
+    # 19 XNOR  -> MOV IMM NOT NOP
+    # 20 XOR   -> MOV IMM NOT NOP
+    # 21 NAND  -> NOT IMM MOV NOP
+    # 22 BRL   -> JMP BRZ BNZ BRN BRP NOP
+    # 23 BRG   -> JMP BRZ BNZ BRN BRP NOP
+    # 24 BRE   -> JMP BRZ NOP
+    # 25 BNE   -> JMP BRZ NOP
+    # 26 BOD   -> JMP NOP
+    # 27 BEV   -> JMP NOP
+    # 28 BLE   -> JMP BRZ BNZ NOP
+    # 29 BRZ   -> JMP NOP
+    # 30 BNZ   -> JMP NOP
+    # 31 BRN   -> JMP NOP
+    # 32 BRP   -> JMP NOP
+    # 33 PSH   -> 
+    # 34 POP   -> INC
+    # 35 CAL   -> 
+    # 36 RET   -> 
+    # 37 HLT   -> 
+    # 38 CPY   -> NOP
+    # 39 BRC   -> JMP BNZ NOP
+    # 40 BNC   -> JMP BRZ NOP
+    
+    # 41 MLT   -> LSH BSL MOV NOP
+    # 42 DIV   -> RSH BSR MOV IMM NOP
+    # 43 MOD   -> AND IMM NOP
+    # 44 BSR   -> RSH MOV NOP
+    # 45 BSL   -> LSH MOV NOP
+    # 46 SRS   -> NOP
+    # 47 BSS   -> SRS BSR MOV NOP
+    # 48 SETE  -> IMM NOP
+    # 49 SETNE -> IMM NOP
+    # 50 SETG  -> IMM NOP
+    # 51 SETL  -> IMM NOP
+    # 52 SETGE -> IMM NOP
+    # 53 SETLE -> IMM NOP
+    # 54 SETC  -> IMM NOP
+    # 55 SETNC -> IMM NOP
+    # 56 LLOD  -> LOD NOP
+    # 57 LSTR  -> STR
+    
+    # 58 IN    -> NOP
+    # 59 OUT   -> 
+
+# projectImmediates (send values from IMM instructions forward)
+
+# pair optimisations
+    # SETBRANCH
+    # LODSTR
+    # STRLOD
+    # PSHPOP
+    # POPPSH
+    
+    # ADDADD
+    # SUBSUB
+    # INCINC
+    # DECDEC
+    # ADDSUB
+    # ADDINC
+    # ADDDEC
+    # SUBINC
+    # SUBDEC
+    # INCDEC
+    # SUBADD
+    # INCADD
+    # DECADD
+    # INCSUB
+    # DECSUB
+    # DECINC
+    
+    # MLTMLT
+    # DIVDIV
+    
+    # LSHLSH
+    # RSHRSH
+    # SRSSRS
+    # BSLBSL
+    # BSRBSR
+    # BSSBSS
+    
+    # LSHBSL
+    # BSLLSH
+    # RSHBSR
+    # BSRRSH
+    # SRSBSS
+    # BSSSRS
+    
+    # simplify
+    # RSHSRS
+    # RSHBSS
+    
+    # bitmasks
+    # LSHRSH
+    # RSHLSH
+    # LSHBSR
+    # BSRLSH
+    # RSHBSL
+    # BSLRSH
+    # BSLBSR
+    # BSRBSL
+    
+    # ANDAND
+    
+    # XORXOR
+
+# optimisation by emulation
+    # only for short sections of code with no LOD STR LLOD LSTR PSH POP CAL RET HLT JMP BRANCH IN OUT
+
+    return tokens, rawHeaders

@@ -134,8 +134,13 @@ def URCLTokeniser(fileName: str = "input.urcl") -> tuple[list, tuple]:
         index = 0
         token = []
         while index < len(line):
-            if (line[index].isalpha()) or (line[index].isnumeric()) or (line[index] in ("&", "%", "#", ".", "$")):
-                text = line[index]
+            if (line[index].isalpha()) or (line[index].isnumeric()) or (line[index] in ("&", "%", "#", ".", "$", "~", "-")):
+                if line[index] == "$":
+                    text = "R"
+                elif line[index] == "#":
+                    text = "M"
+                else:
+                    text = line[index]
                 index += 1
                 if index < len(line):
                     while line[index] not in (" ", "[", "]", "&", "%", "#", "$", "R", "r", "M", "m", "."):
@@ -147,7 +152,30 @@ def URCLTokeniser(fileName: str = "input.urcl") -> tuple[list, tuple]:
                     text = str(int(text, 0))
                 except Exception:
                     pass
-                token.append(text)
+                if text.startswith("-"):
+                    num = 0 - int(text[1: ], 0)
+                    while num < 0:
+                        num += (2 ** BITS)
+                    text = str(num)
+                elif (text.startswith("&")) and (bitOperator == "=="):
+                    if text == "&BITS":
+                        text = str(BITS)
+                    elif text == "&MSB":
+                        text = str(2 ** (BITS - 1))
+                    elif text == "&SMSB":
+                        text = str(2 ** (BITS - 2))
+                    elif text == "&MAX":
+                        text = str((2 ** BITS) - 1)
+                    elif text == "&SMAX":
+                        text = str((2 ** (BITS - 1)) - 1)
+                    elif text == "&UHALF":
+                        text = str(((2 ** (BITS // 2)) - 1) << (BITS // 2))
+                    elif text == "&LHALF":
+                        text = str((2 ** (BITS // 2)) - 1) # doesn't work for odd numbers of bits
+                if text == "R0":
+                    token.append("0")
+                else:
+                    token.append(text)
             elif line[index] in ("[", "]"):
                 token.append(line[index])
                 index += 1
