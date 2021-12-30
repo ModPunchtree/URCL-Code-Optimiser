@@ -2394,6 +2394,134 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
+    def MLTMLT(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double MLT optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "MLT":
+                line2 = tokens[index + 1]
+                if line2[0] == "MLT":
+                    if line[1] == line2[1]:
+                        if line[1] in line2[2: ]:
+                            good = True
+                            if line[2].isnumeric():
+                                number = int(line[2])
+                                non = line[3]
+                            elif line[3].isnumeric():
+                                number = int(line[3])
+                                non = line[2]
+                            else:
+                                good = False
+                            if line2[2].isnumeric():
+                                number2 = int(line2[2])
+                            elif line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                tokens[index] = ["MLT", line[1], non, str(correctValue(number * number2))]
+                                tokens.pop(index + 1)
+                                return tokens
+                            
+        return tokens
+    
+    def DIVDIV(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double DIV optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "DIV":
+                line2 = tokens[index + 1]
+                if line2[0] == "DIV":
+                    if line[1] == line2[1]:
+                        if line[1] in line2[2: ]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                tokens[index] = ["DIV", line[1], line[2], str(correctValue(number * number2))]
+                                tokens.pop(index + 1)
+                                return tokens
+        
+        return tokens
+    
+    def LSHLSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double LSH optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "LSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "LSH":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            tokens[index] = ["BSL", line[1], line[2], "2"]
+                            tokens.pop(index + 1)
+                            return tokens
+        
+        return tokens
+    
+    def RSHRSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double RSH optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "RSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "RSH":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            tokens[index] = ["BSR", line[1], line[2], "2"]
+                            tokens.pop(index + 1)
+                            return tokens
+        
+        return tokens
+    
     # label/branching optimisations
     # 1 shortcut branches
     oldTokens = [([token for token in line]) for line in tokens]
@@ -2577,10 +2705,29 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # MLTMLT
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = MLTMLT(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # DIVDIV
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = DIVDIV(tokens)
+    if oldTokens != tokens:
+        return tokens
     
     # LSHLSH
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = LSHLSH(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # RSHRSH
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = RSHRSH(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # SRSSRS
     # BSLBSL
     # BSRBSR
@@ -2610,10 +2757,10 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
     # ANDAND
     
     # XORXOR
-
-# optimisation by emulation
-    # only for short sections of code with no LOD STR LLOD LSTR PSH POP CAL RET HLT JMP BRANCH IN OUT
     
+    # inline branches
+    # inline calls (convert CAL to core then inline branches, if different keep, else return original)
+
     return tokens
 
 # input MINREG, BITS, list of tokens
