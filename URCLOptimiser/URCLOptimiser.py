@@ -2040,6 +2040,122 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
+    def ADDDEC(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with an ADD immediate followed by an DEC optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "ADD":
+                line2 = tokens[index + 1]
+                if line2[0] == "INC":
+                    if line[1] == line2[1]:
+                        good = True
+                        if line[1].isnumeric():
+                            number = int(line[1])
+                        elif line[2].isnumeric():
+                            number = int(line[2])
+                        else:
+                            good = False
+                        if good:
+                            if line[1] == line2[2]:
+                                tokens[index] = ["ADD", line[1], line[2], str(correctValue(number - 1, BITS))]
+                                tokens.pop[index + 1]
+                                return tokens
+        
+        return tokens
+    
+    def SUBINC(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with SUB immediate followed by INC optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "SUB":
+                line2 = tokens[index + 1]
+                if line2[0] == "INC":
+                    if line[1] == line2[1]:
+                        good = True
+                        if line[2].isnumeric():
+                            number = int(line[2])
+                        else:
+                            good = False
+                        if good:
+                            if line[1] == line2[2]:
+                                tokens[index] = ["SUB", line[1], line[2], str(correctValue(number - 1, BITS))]
+                                tokens.pop[index + 1]
+                                return tokens
+                
+        return tokens
+    
+    def SUBDEC(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with SUB immediate followed by DEC optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "SUB":
+                line2 = tokens[index + 1]
+                if line2[0] == "DEC":
+                    if line[1] == line2[1]:
+                        good = True
+                        if line[2].isnumeric():
+                            number = int(line[2])
+                        else:
+                            good = False
+                        if good:
+                            if line[1] == line2[2]:
+                                tokens[index] = ["SUB", line[1], line[2], str(correctValue(number + 1, BITS))]
+                                tokens.pop[index + 1]
+                                return tokens
+                
+        return tokens
+    
     
     
     # label/branching optimisations
@@ -2165,8 +2281,23 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # ADDDEC
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = ADDDEC(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # SUBINC
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = SUBINC(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # SUBDEC
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = SUBDEC(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # INCDEC
     # SUBADD
     # INCADD
