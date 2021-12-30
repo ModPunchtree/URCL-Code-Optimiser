@@ -2436,7 +2436,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                             else:
                                 good = False
                             if good:
-                                tokens[index] = ["MLT", line[1], non, str(correctValue(number * number2))]
+                                tokens[index] = ["MLT", line[1], non, str(correctValue(number * number2, BITS))]
                                 tokens.pop(index + 1)
                                 return tokens
                             
@@ -2478,13 +2478,13 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                             else:
                                 good = False
                             if good:
-                                tokens[index] = ["DIV", line[1], line[2], str(correctValue(number * number2))]
+                                tokens[index] = ["DIV", line[1], line[2], str(correctValue(number * number2, BITS))]
                                 tokens.pop(index + 1)
                                 return tokens
         
         return tokens
     
-    def LSHLSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def LSHLSH(tokens: list[list[str]]) -> list[list[str]]:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2503,7 +2503,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def RSHRSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def RSHRSH(tokens: list[list[str]]) -> list[list[str]]:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2519,6 +2519,115 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                             tokens[index] = ["BSR", line[1], line[2], "2"]
                             tokens.pop(index + 1)
                             return tokens
+        
+        return tokens
+    
+    def SRSSRS(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double SRS optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "SRS":
+                line2 = tokens[index + 1]
+                if line2[0] == "SRS":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            tokens[index] = ["BSS", line[1], line[2], "2"]
+                            tokens.pop(index + 1)
+                            return tokens
+        
+        return tokens
+    
+    def BSLBSL(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double BSL optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "BSL":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSL":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if (number + number2) < (2 ** BITS):
+                                    tokens[index] = ["BSL", line[1], line[2], str(number + number2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
+        
+        return tokens
+    
+    def BSRBSR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double BSR optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "BSR":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSR":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if (number + number2) < (2 ** BITS):
+                                    tokens[index] = ["BSR", line[1], line[2], str(number + number2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
+        
+        return tokens
+    
+    def BSSBSS(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double BSS optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "BSS":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSS":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if (number + number2) < (2 ** BITS):
+                                    tokens[index] = ["BSS", line[1], line[2], str(number + number2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
         
         return tokens
     
@@ -2729,9 +2838,28 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # SRSSRS
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = SRSSRS(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # BSLBSL
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = BSLBSL(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # BSRBSR
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = BSRBSR(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # BSSBSS
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = BSSBSS(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
     
     # LSHBSL
     # BSLLSH
