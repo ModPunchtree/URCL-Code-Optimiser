@@ -1790,6 +1790,92 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
+    def PSHPOP(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with PSH followed by POP optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "PSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "POP":
+                    psh = line[1]
+                    pop = line2[1]
+                    tokens[index] = ["LSTR", "SP", str((2 ** BITS) - 1), psh]
+                    tokens[index + 1] = ["MOV", pop, psh]
+        
+        return tokens
+    
+    def POPPSH(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with POP followed by PSH optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "POP":
+                line2 = tokens[index + 1]
+                if line2[0] == "PSH":
+                    pop = line[1]
+                    psh = line2[1]
+                    if pop == psh:
+                        tokens[index] = ["LOD", pop, "SP"]
+                        tokens.pop(index + 1)
+                        return tokens
+                    tokens[index] = ["LOD", pop, "SP"]
+                    tokens[index + 1] = ["STR", "SP", psh]
+        
+        return tokens
+    
+    def ADDADD(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with two ADD immediates in a row optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "ADD":
+                line2 = tokens[index + 1]
+                if line2[0] == "ADD":
+                    if line[1] == line2[1]:
+                        good = True
+                        if line[1].isnumeric():
+                            number = int(line[1])
+                        elif line[2].isnumeric():
+                            number = int(line[2])
+                        else:
+                            good = False
+                        if line2[1].isnumeric():
+                            number2 = int(line[1])
+                        elif line2[2].isnumeric():
+                            number2 = int(line[2])
+                        else:
+                            good = False
+                        if good:
+                            if line[1] in line2[1: ]:
+                                tokens[index] = ["ADD", line[1], str(correctValue(number + number2, BITS))]
+                                tokens.pop[index + 1]
+                                return tokens
+        
+        return tokens
+    
     # label/branching optimisations
     # 1 shortcut branches
     oldTokens = [([token for token in line]) for line in tokens]
@@ -1865,11 +1951,23 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # PSHPOP
-    
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = PSHPOP(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
     
     # POPPSH
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = POPPSH(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
     
     # ADDADD
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = ADDADD(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # SUBSUB
     # INCINC
     # DECDEC
