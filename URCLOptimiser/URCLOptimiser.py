@@ -2337,7 +2337,62 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
+    def DECSUB(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with an DEC followed by an SUB immediate optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "DEC":
+                line2 = tokens[index + 1]
+                if line2[0] == "SUB":
+                    if line[1] == line2[1]:
+                        good = True
+                        if line2[3].isnumeric():
+                            number = int(line2[3])
+                        else:
+                            good = False
+                        if good:
+                            if line[1] == line2[2]:
+                                tokens[index] = ["SUB", line[1], line[2], str(correctValue(number + 1, BITS))]
+                                tokens.pop[index + 1]
+                                return tokens
+        
+        return tokens
     
+    def DECINC(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with DEC followed by INC optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "DEC":
+                line2 = tokens[index + 1]
+                if line2[0] == "INC":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            tokens[index] = ["MOV", line[1], line[2]]
+                            tokens.pop[index + 1]
+                            return tokens
+        
+        return tokens
     
     # label/branching optimisations
     # 1 shortcut branches
@@ -2481,7 +2536,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
     
     # INCDEC
     oldTokens = [([token for token in line]) for line in tokens]
-    tokens = INCDEC(tokens, BITS)
+    tokens = INCDEC(tokens)
     if oldTokens != tokens:
         return tokens
     
@@ -2510,7 +2565,16 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # DECSUB
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = DECSUB(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # DECINC
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = DECINC(tokens)
+    if oldTokens != tokens:
+        return tokens
     
     # MLTMLT
     # DIVDIV
