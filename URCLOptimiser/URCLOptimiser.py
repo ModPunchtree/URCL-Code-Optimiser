@@ -959,7 +959,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         """
         
         index = 0
-        while index < range(len(tokens) - 1):
+        while index < len(tokens) - 1:
             line = tokens[index]
             line2 = tokens[index + 1]
             if (line[0] == "LOD") and (line2[0] == "STR"):
@@ -977,7 +977,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         """
         
         index = 0
-        while index < range(len(tokens) - 1):
+        while index < len(tokens) - 1:
             line = tokens[index]
             line2 = tokens[index + 1]
             if (line[0] == "STR") and (line2[0] == "LOD"):
@@ -988,6 +988,805 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                         tokens[index + 1] = ["MOV", line2[1], line[2]]
                     tokens.pop(index + 1)
             index += 1
+        
+        return tokens
+    
+    def singleInstructionOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with each instruction optimised independently of all other instructions.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        index = 0
+        while index < len(tokens):
+            line = tokens[index]
+            op = line[0]
+            if len(line) > 1:
+                ops = line[1: ]
+            
+            #  1 ADD   -> LSH MOV INC DEC NOP
+            if op == "ADD":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["LSH", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == "1":
+                    tokens[index] = ["INC", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "1":
+                    tokens[index] = ["INC", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["DEC", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["DEC", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            #  2 RSH   -> MOV NOP
+            elif op == "RSH":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            #  3 LOD   -> NOP
+            elif op == "LOD":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            #  4 STR   -> 
+            elif op == "STR":
+                index += 1
+            
+            #  5 BGE   -> JMP BRZ BRN BRP
+            elif op == "BGE":
+                if ops[2] == "0":
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[2] == (2 ** (BITS - 1)):
+                    tokens[index] = ["BRN", ops[0], ops[1]]
+                elif ops[1] == ((2 ** (BITS - 1)) - 1):
+                    tokens[index] = ["BRP", ops[0], ops[2]]
+                elif ops[1] == "0":
+                    tokens[index] = ["BRZ", ops[0], ops[2]]
+                index += 1
+            
+            #  6 NOR   -> NOT MOV NOP
+            elif op == "NOR":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["NOT", ops[0], ops[2]]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["NOT", ops[0], ops[2]]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["NOT", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == str(((2 ** BITS) - 1)):
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2] == str(((2 ** BITS) - 1)):
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                else:
+                    index += 1
+            
+            #  7 SUB   -> MOV IMM NEG DEC INC NOP
+            elif op == "SUB":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["NEG", ops[0], ops[2]]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["NOT", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[2] == "1":
+                    tokens[index] = ["DEC", ops[0], ops[1]]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["INC", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            #  8 JMP   -> 
+            elif op == "JMP":
+                index += 1
+            
+            #  9 MOV   -> IMM NOP
+            elif op == "MOV":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1].isnumeric():
+                    tokens[index][0] = "IMM"
+                    index += 1
+                else:
+                    index += 1
+            
+            # 10 NOP   -> delete
+            elif op == "NOP":
+                tokens.pop(index)
+            
+            # 11 IMM   -> NOP
+            elif op == "IMM":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 12 LSH   -> NOP
+            elif op == "LSH":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 13 INC   -> NOP
+            elif op == "INC":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 14 DEC   -> NOP
+            elif op == "DEC":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 15 NEG   -> NOP
+            elif op == "NEG":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 16 AND   -> MOV IMM NOP
+            elif op == "AND":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["MOV", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 17 OR    -> MOV IMM NOP
+            elif op == "OR":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 18 NOT   -> NOP
+            elif op == "NOT":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 19 XNOR  -> MOV IMM NOT NOP
+            elif op == "XNOR":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["NOT", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["NOT", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["MOV", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 20 XOR   -> MOV IMM NOT NOP
+            elif op == "XOR":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["NOT", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["NOT", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 21 NAND  -> NOT IMM NOP
+            elif op == "NAND":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["NOT", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["NOT", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["NOT", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 22 BRL   -> BRZ BNZ BRN BRP NOP
+            elif op == "BRL":
+                if ops[1] == "0":
+                    tokens[index] = ["BNZ", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens.pop(index)
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens.pop(index)
+                elif ops[2] == "1":
+                    tokens[index] = ["BRZ", ops[0], ops[1]]
+                    index += 1
+                elif ops[2] == str(2 ** (BITS - 1)):
+                    tokens[index] = ["BRP", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == str((2 ** (BITS - 1)) - 1):
+                    tokens[index] = ["BRN", ops[0], ops[2]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 23 BRG   -> BRZ BNZ BRN BRP NOP
+            elif op == "BRG":
+                if ops[2] == "0":
+                    tokens[index] = ["BNZ", ops[0], ops[2]]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens.pop(index)
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens.pop(index)
+                elif ops[1] == "1":
+                    tokens[index] = ["BRZ", ops[0], ops[2]]
+                    index += 1
+                elif ops[1] == str(2 ** (BITS - 1)):
+                    tokens[index] = ["BRP", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == str((2 ** (BITS - 1)) - 1):
+                    tokens[index] = ["BRN", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 24 BRE   -> JMP BRZ
+            elif op == "BRE":
+                if ops[1] == ops[2]:
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[1] == "0":
+                    tokens[index] = ["BRZ", ops[0], ops[2]]
+                elif ops[2] == "0":
+                    tokens[index] = ["BRZ", ops[0], ops[1]]
+                index += 1
+            
+            # 25 BNE   -> BRZ NOP
+            elif op == "BNE":
+                if ops[1] == ops[2]:
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["BNZ", ops[0], ops[2]]
+                elif ops[2] == "0":
+                    tokens[index] = ["BNZ", ops[0], ops[1]]
+                else:
+                    index += 1
+            
+            # 26 BOD   -> JMP NOP
+            elif op == "BOD":
+                index += 1
+            
+            # 27 BEV   -> JMP NOP
+            elif op == "BEV":
+                index += 1
+            
+            # 28 BLE   -> JMP BRP BRN BRZ
+            elif op == "BLE":
+                if ops[1] == ops[2]:
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[1] == "0":
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[2] == "0":
+                    tokens[index] = ["BRZ", ops[0], ops[1]]
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[2] == str((2 ** (BITS - 1)) - 1):
+                    tokens[index] = ["BRP", ops[0], ops[1]]
+                elif ops[1] == str(2 ** (BITS - 1)):
+                    tokens[index] = ["BRN", ops[0], ops[2]]
+                index += 1
+            
+            # 29 BRZ   ->
+            elif op == "BRZ":
+                index += 1
+            
+            # 30 BNZ   ->
+            elif op == "BNZ":
+                index += 1
+            
+            # 31 BRN   ->
+            elif op == "BRN":
+                index += 1
+            
+            # 32 BRP   ->
+            elif op == "BRP":
+                index += 1
+            
+            # 33 PSH   -> 
+            elif op == "PSH":
+                index += 1
+            
+            # 34 POP   -> INC
+            elif op == "POP":
+                if ops[0] == "0":
+                    tokens[index] == ["INC", "SP", "SP"]
+                index += 1
+            
+            # 35 CAL   -> 
+            elif op == "CAL":
+                index += 1
+            
+            # 36 RET   -> 
+            elif op == "RET":
+                index += 1
+            
+            # 37 HLT   -> 
+            elif op == "HLT":
+                index += 1
+            
+            # 38 CPY   -> NOP
+            elif op == "CPY":
+                if ops[1] == ops[2]:
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 39 BRC   -> BNZ NOP
+            elif op == "BRC":
+                if ops[1] == "0":
+                    tokens.pop(index)
+                elif ops[2] == "0":
+                    tokens.pop(index)
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["BNZ", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["BNZ", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["BRN", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 40 BNC   -> JMP BRZ
+            elif op == "BNC":
+                if ops[1] == "0":
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[2] == "0":
+                    tokens[index] = ["JMP", ops[0]]
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["BRZ", ops[0], ops[2]]
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["BRZ", ops[0], ops[1]]
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["BRP", ops[0], ops[1]]
+                    index += 1
+                index += 1
+            
+            # complex instructions
+            # 41 MLT   -> LSH BSL MOV NOP
+            elif op == "MLT":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                    index -= 1
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                elif ops[2] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                elif ops[1] == "1":
+                    tokens[index] = ["MOV", ops[0], ops[2]]
+                elif ops[2] == "1":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                elif ops[1] == "2":
+                    tokens[index] = ["LSH", ops[0], ops[2]]
+                elif ops[2] == "2":
+                    tokens[index] = ["LSH", ops[0], ops[1]]
+                else:
+                    for number in range(BITS):
+                        num = str(2 ** number)
+                        if ops[1] == num:
+                            tokens[index] = ["BSL", ops[0], ops[2], str(number)]
+                            break
+                        elif ops[2] == num:
+                            tokens[index] = ["BSL", ops[0], ops[1], str(number)]
+                            break
+                index += 1 
+            
+            # 42 DIV   -> RSH BSR MOV IMM NOP
+            elif op == "DIV":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                    index -= 1
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                elif ops[2] == "0":
+                    raise Exception(f"FATAL - Division by zero: {line}")
+                elif ops[2] == "1":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "1"]
+                elif ops[2] == "2":
+                    tokens[index] = ["RSH", ops[0], ops[1]]
+                else:
+                    for number in range(BITS):
+                        num = str(2 ** number)
+                        if ops[2] == num:
+                            tokens[index] = ["BSR", ops[0], ops[1], str(number)]
+                            break
+                index += 1
+            
+            # 43 MOD   -> AND IMM NOP
+            elif op == "MOD":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                    index -= 1
+                elif ops[1] == "1":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "0"]
+                else:
+                    for number in range(BITS):
+                        num = str(2 ** number)
+                        num2 = str((2 ** number) - 1)
+                        if ops[2] == num:
+                            tokens[index] = ["AND", ops[0], ops[1], num2]
+                            break
+                index += 1
+            
+            # 44 BSR   -> IMM RSH MOV NOP
+            elif op == "BSR":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[2] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[2] == "1":
+                    tokens[index] = ["RSH", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2].isnumeric():
+                    if int(ops[2]) >= BITS:
+                        tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 45 BSL   -> LSH MOV NOP
+            elif op == "BSL":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[2] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[2] == "1":
+                    tokens[index] = ["LSH", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2].isnumeric():
+                    if int(ops[2]) >= BITS:
+                        tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 46 SRS   -> NOP
+            elif op == "SRS":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 47 BSS   -> SRS BSR MOV NOP
+            elif op == "BSS":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[2] == "0":
+                    tokens[index] = ["MOV", ops[0], ops[1]]
+                    index += 1
+                elif ops[2] == "1":
+                    tokens[index] = ["SRS", ops[0], ops[1]]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[1].isnumeric():
+                    if int(ops[1]) < str(2 ** (BITS - 1)):
+                        tokens[index][0] = "BSR"
+                    index += 1
+                else:
+                    index += 1
+            
+            # 48 SETE  -> IMM NOP
+            elif op == "SETE":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 49 SETNE -> IMM NOP
+            elif op == "SETNE":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 50 SETG  -> SETNE IMM NOP
+            elif op == "SETG":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["SETNE", ops[0], ops[1], "0"]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 51 SETL  -> SETNE IMM NOP
+            elif op == "SETL":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[1] == "0":
+                    tokens[index] = ["SETNE", ops[0], ops[1], "0"]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 52 SETGE -> SETE IMM NOP
+            elif op == "SETGE":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[1] ==  "0":
+                    tokens[index] = ["SETE", ops[0], ops[2], "0"]
+                    index += 1
+                elif ops[2] ==  "0":
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[1] == str((2 ** BITS) - 1):
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 53 SETLE -> IMM NOP
+            elif op == "SETLE":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[2] ==  "0":
+                    tokens[index] = ["SETE", ops[0], ops[1], "0"]
+                    index += 1
+                elif ops[1] ==  "0":
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                elif ops[2] == str((2 ** BITS) - 1):
+                    tokens[index] = ["IMM", ops[0], str((2 ** BITS) - 1)]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 54 SETC  -> IMM NOP
+            elif op == "SETC":
+                if ops[0] == "0":
+                    tokens.pop()
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["IMM", ops[0], "0"]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["SETGE", ops[0], str(2 ** (BITS - 1))]
+                    index += 1
+                elif ops[1].isnumeric():
+                    tokens[index] = ["SETGE", ops[0], ops[2], str((2 ** BITS) - int(ops[1]))]
+                    index += 1
+                elif ops[2].isnumeric():
+                    tokens[index] = ["SETGE", ops[0], ops[1], str((2 ** BITS) - int(ops[2]))]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 55 SETNC -> IMM NOP
+            elif op == "SETNC":
+                if ops[0] == "0":
+                    tokens.pop()
+                elif ops[1] == "0":
+                    tokens[index] = ["IMM", ops[0], str(2 ** BITS)]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["IMM", ops[0], str(2 ** BITS)]
+                    index += 1
+                elif ops[1] == ops[2]:
+                    tokens[index] = ["SETL", ops[0], str(2 ** (BITS - 1))]
+                    index += 1
+                elif ops[1].isnumeric():
+                    tokens[index] = ["SETL", ops[0], ops[2], str((2 ** BITS) - int(ops[1]))]
+                    index += 1
+                elif ops[2].isnumeric():
+                    tokens[index] = ["SETL", ops[0], ops[1], str((2 ** BITS) - int(ops[2]))]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 56 LLOD  -> LOD NOP
+            elif op == "LLOD":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                elif ops[1] == "0":
+                    tokens[index] = ["LOD", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["LOD", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # 57 LSTR  -> STR
+            elif op == "LSTR":
+                if ops[1] == "0":
+                    tokens[index] = ["STR", ops[0], ops[2]]
+                    index += 1
+                elif ops[2] == "0":
+                    tokens[index] = ["STR", ops[0], ops[1]]
+                    index += 1
+                else:
+                    index += 1
+            
+            # I/O instructions
+            # 58 IN    -> NOP
+            elif op == "IN":
+                if ops[0] == "0":
+                    tokens.pop(index)
+                else:
+                    index += 1
+            
+            # 59 OUT   -> 
+            elif op == "OUT":
+                index += 1
+            
+            elif (op.startswith(".")) or (op == "DW"):
+                index += 1
+            else:
+                raise Exception(f"FATAL - Unrecognised instruction operand: {op}")
         
         return tokens
     
@@ -1040,6 +1839,12 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
     if oldTokens != tokens:
         return tokens
 
+    # single instruction optimisations
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = singleInstructionOptimisations(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+
     # pair optimisations
     # SETBranch
     oldTokens = [([token for token in line]) for line in tokens]
@@ -1060,6 +1865,8 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # PSHPOP
+    
+    
     # POPPSH
     
     # ADDADD
