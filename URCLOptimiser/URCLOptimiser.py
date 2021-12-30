@@ -900,6 +900,97 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
+    def SETBranch(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with BRZ and BNZ optimised if they are preceded by a SET instruction.
+        """
+        
+        for index in range(len(tokens) - 1):
+            line = tokens[index]
+            if line[0].startswith("SET"):
+                register = line[1]
+                line2 = tokens[index + 1]
+                if line2[0] == "BRZ":
+                    if register == line2[2]:
+                        if line[0] == "SETE":
+                            tokens[index + 1] = ["BNE", line[1], line[2], line[3]]
+                        elif line[0] == "SETNE":
+                            tokens[index + 1] = ["BRE", line[1], line[2], line[3]]
+                        elif line[0] == "SETG":
+                            tokens[index + 1] = ["BLE", line[1], line[2], line[3]]
+                        elif line[0] == "SETL":
+                            tokens[index + 1] = ["BGE", line[1], line[2], line[3]]
+                        elif line[0] == "SETGE":
+                            tokens[index + 1] = ["BRL", line[1], line[2], line[3]]
+                        elif line[0] == "SETLE":
+                            tokens[index + 1] = ["BRG", line[1], line[2], line[3]]
+                        elif line[0] == "SETC":
+                            tokens[index + 1] = ["BNC", line[1], line[2], line[3]]
+                        elif line[0] == "SETNC":
+                            tokens[index + 1] = ["BRC", line[1], line[2], line[3]]
+                if line2[0] == "BNZ":
+                    if register == line2[2]:
+                        if line[0] == "SETE":
+                            tokens[index + 1] = ["BRE", line[1], line[2], line[3]]
+                        elif line[0] == "SETNE":
+                            tokens[index + 1] = ["BNE", line[1], line[2], line[3]]
+                        elif line[0] == "SETG":
+                            tokens[index + 1] = ["BRG", line[1], line[2], line[3]]
+                        elif line[0] == "SETL":
+                            tokens[index + 1] = ["BRL", line[1], line[2], line[3]]
+                        elif line[0] == "SETGE":
+                            tokens[index + 1] = ["BGE", line[1], line[2], line[3]]
+                        elif line[0] == "SETLE":
+                            tokens[index + 1] = ["BLE", line[1], line[2], line[3]]
+                        elif line[0] == "SETC":
+                            tokens[index + 1] = ["BRC", line[1], line[2], line[3]]
+                        elif line[0] == "SETNC":
+                            tokens[index + 1] = ["BNC", line[1], line[2], line[3]]
+
+        return tokens
+    
+    def LODSTR(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with LOD followed by STR to the same location optimised.
+        """
+        
+        index = 0
+        while index < range(len(tokens) - 1):
+            line = tokens[index]
+            line2 = tokens[index + 1]
+            if (line[0] == "LOD") and (line2[0] == "STR"):
+                if (line[2] == line2[0]) and (line[1] != line[2]):
+                    tokens.pop(index + 1)
+            index += 1
+        
+        return tokens
+    
+    def STRLOD(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with STR followed by LOD to the same location optimised.
+        """
+        
+        index = 0
+        while index < range(len(tokens) - 1):
+            line = tokens[index]
+            line2 = tokens[index + 1]
+            if (line[0] == "STR") and (line2[0] == "LOD"):
+                if line[1] == line2[2]:
+                    if line[2] == line2[1]:
+                        tokens.pop(index + 1)
+                    else:
+                        tokens[index + 1] = ["MOV", line2[1], line[2]]
+                    tokens.pop(index + 1)
+            index += 1
+        
+        return tokens
+    
     # label/branching optimisations
     # 1 shortcut branches
     oldTokens = [([token for token in line]) for line in tokens]
@@ -949,10 +1040,25 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
     if oldTokens != tokens:
         return tokens
 
-# pair optimisations
-    # SETBRANCH
+    # pair optimisations
+    # SETBranch
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = SETBranch(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # LODSTR
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = LODSTR(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # STRLOD
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = STRLOD(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # PSHPOP
     # POPPSH
     
