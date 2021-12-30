@@ -1856,16 +1856,16 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "ADD":
                     if line[1] == line2[1]:
                         good = True
-                        if line[1].isnumeric():
-                            number = int(line[1])
-                        elif line[2].isnumeric():
+                        if line[2].isnumeric():
                             number = int(line[2])
+                        elif line[3].isnumeric():
+                            number = int(line[3])
                         else:
                             good = False
-                        if line2[1].isnumeric():
-                            number2 = int(line[1])
-                        elif line2[2].isnumeric():
-                            number2 = int(line[2])
+                        if line2[2].isnumeric():
+                            number2 = int(line2[2])
+                        elif line2[3].isnumeric():
+                            number2 = int(line2[3])
                         else:
                             good = False
                         if good:
@@ -1902,12 +1902,12 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "SUB":
                     if line[1] == line2[1]:
                         good = True
-                        if line[2].isnumeric():
-                            number = int(line[2])
+                        if line[3].isnumeric():
+                            number = int(line[3])
                         else:
                             good = False
-                        if line2[2].isnumeric():
-                            number2 = int(line[2])
+                        if line2[3].isnumeric():
+                            number2 = int(line2[3])
                         else:
                             good = False
                         if good:
@@ -1982,14 +1982,14 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "SUB":
                     if line[1] == line2[1]:
                         good = True
-                        if line[1].isnumeric():
-                            number = int(line[1])
-                        elif line[2].isnumeric():
+                        if line[2].isnumeric():
                             number = int(line[2])
+                        elif line[3].isnumeric():
+                            number = int(line[3])
                         else:
                             good = False
-                        if line2[2].isnumeric():
-                            number2 = int(line[2])
+                        if line2[3].isnumeric():
+                            number2 = int(line2[3])
                         else:
                             good = False
                         if good:
@@ -2026,10 +2026,10 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "INC":
                     if line[1] == line2[1]:
                         good = True
-                        if line[1].isnumeric():
-                            number = int(line[1])
-                        elif line[2].isnumeric():
+                        if line[2].isnumeric():
                             number = int(line[2])
+                        elif line[3].isnumeric():
+                            number = int(line[3])
                         else:
                             good = False
                         if good:
@@ -2066,10 +2066,10 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "INC":
                     if line[1] == line2[1]:
                         good = True
-                        if line[1].isnumeric():
-                            number = int(line[1])
-                        elif line[2].isnumeric():
+                        if line[2].isnumeric():
                             number = int(line[2])
+                        elif line[3].isnumeric():
+                            number = int(line[3])
                         else:
                             good = False
                         if good:
@@ -2106,8 +2106,8 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "INC":
                     if line[1] == line2[1]:
                         good = True
-                        if line[2].isnumeric():
-                            number = int(line[2])
+                        if line[3].isnumeric():
+                            number = int(line[3])
                         else:
                             good = False
                         if good:
@@ -2144,8 +2144,8 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "DEC":
                     if line[1] == line2[1]:
                         good = True
-                        if line[2].isnumeric():
-                            number = int(line[2])
+                        if line[3].isnumeric():
+                            number = int(line[3])
                         else:
                             good = False
                         if good:
@@ -2201,14 +2201,14 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "ADD":
                     if line[1] == line2[1]:
                         good = True
-                        if line2[1].isnumeric():
-                            number = int(line[1])
-                        elif line2[2].isnumeric():
-                            number = int(line[2])
+                        if line2[2].isnumeric():
+                            number = int(line2[2])
+                        elif line2[3].isnumeric():
+                            number = int(line2[3])
                         else:
                             good = False
-                        if line[2].isnumeric():
-                            number2 = int(line[2])
+                        if line[3].isnumeric():
+                            number2 = int(line[3])
                         else:
                             good = False
                         if good:
@@ -2245,10 +2245,10 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "ADD":
                     if line[1] == line2[1]:
                         good = True
-                        if line2[1].isnumeric():
-                            number = int(line[1])
-                        elif line2[2].isnumeric():
-                            number = int(line[2])
+                        if line2[2].isnumeric():
+                            number = int(line2[2])
+                        elif line2[3].isnumeric():
+                            number = int(line2[3])
                         else:
                             good = False
                         if good:
@@ -2285,15 +2285,53 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 if line2[0] == "ADD":
                     if line[1] == line2[1]:
                         good = True
-                        if line2[1].isnumeric():
-                            number = int(line[1])
-                        elif line2[2].isnumeric():
-                            number = int(line[2])
+                        if line2[2].isnumeric():
+                            number = int(line2[2])
+                        elif line2[3].isnumeric():
+                            number = int(line2[3])
                         else:
                             good = False
                         if good:
                             if line[1] in line2[2: ]:
                                 tokens[index] = ["ADD", line[1], line[2], str(correctValue(number - 1, BITS))]
+                                tokens.pop[index + 1]
+                                return tokens
+        
+        return tokens
+    
+    def INCSUB(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with an INC followed by an SUB immediate optimised.
+        """
+        
+        def correctValue(value: int, BITS: int) -> int:
+            """
+            Takes a value and simulates roll over using a word length specified by BITS.
+            
+            Returns the value corrected so that it fits in the stated word length.
+            """
+            
+            while value < 0:
+                value += (2 ** BITS)
+            value %= (2 ** BITS)
+            
+            return value
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "INC":
+                line2 = tokens[index + 1]
+                if line2[0] == "SUB":
+                    if line[1] == line2[1]:
+                        good = True
+                        if line2[3].isnumeric():
+                            number = int(line2[3])
+                        else:
+                            good = False
+                        if good:
+                            if line[1] == line2[2]:
+                                tokens[index] = ["SUB", line[1], line[2], str(correctValue(number - 1, BITS))]
                                 tokens.pop[index + 1]
                                 return tokens
         
@@ -2466,6 +2504,11 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # INCSUB
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = INCSUB(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # DECSUB
     # DECINC
     
