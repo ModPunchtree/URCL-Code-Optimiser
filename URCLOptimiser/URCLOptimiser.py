@@ -831,7 +831,33 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    
+    def projectImmediates(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        
+        """
+        
+        for index, line in enumerate(tokens):
+            if line[0] == "IMM":
+                if line[1] != "0":
+                    register = line[1]
+                    immediate = line[2]
+                    for index2, line2 in enumerate(tokens[index + 1: ]):
+                        if line2[0] in ("LOD", "STR", "BGE", "JMP", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "PSH", "CAL", "CPY", "BRC", "BNC", "LLOD", "LSTR", "OUT"):
+                            if line2[1] == register: # read from op1
+                                tokens[index + 1 + index2][1] = immediate
+                        if line2[0] in ("ADD", "RSH", "LOD", "STR", "BGE", "NOR", "SUB", "MOV", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CPY", "BRC", "BNC", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "LLOD", "LSTR", "IN", "OUT"):
+                            if line2[2] == register: # read from op2
+                                tokens[index + 1 + index2][2] = immediate
+                        if line2[0] in ("ADD", "BGE", "NOR", "SUB", "AND", "OR", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BLE", "BRC", "BNC", "MLT", "DIV", "MOD", "BSR", "BSL", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "LLOD", "LSTR"):
+                            if line2[3] == register: # read from op3
+                                tokens[index + 1 + index2][3] = immediate
+                        if line2[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
+                            if line2[1] == register: # write to op1
+                                break
+                        if (line2[0].startswith(".")) or (line2[0] == "JMP"):
+                            break # label or JMP
+        
+        return tokens
     
     # label/branching optimisations
     # 1 shortcut branches
@@ -870,9 +896,14 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
     if oldTokens != tokens:
         return tokens
 
+    # projectImmediates (send values from IMM instructions forwards)
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = projectImmediates(tokens)
+    if oldTokens != tokens:
+        return tokens
 
-
-# projectImmediates (send values from IMM instructions forward)
+    # write before read
+    
 
 # pair optimisations
     # SETBRANCH
