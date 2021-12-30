@@ -833,7 +833,9 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
     
     def projectImmediates(tokens: list[list[str]]) -> list[list[str]]:
         """
+        Takes sanitised, tokenised URCL code.
         
+        Returns URCL code with values from IMM instructions projected forwards.
         """
         
         for index, line in enumerate(tokens):
@@ -854,8 +856,47 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                         if line2[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
                             if line2[1] == register: # write to op1
                                 break
-                        if (line2[0].startswith(".")) or (line2[0] == "JMP"):
-                            break # label or JMP
+                        if (line2[0].startswith(".")) or (line2[0] in ("JMP", "HLT", "RET")):
+                            break # label or JMP, RET, HLT
+        
+        return tokens
+    
+    def writeBeforeRead(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with all instructions whoes output is overwritten before being read, removed.
+        """
+        
+        index = 0
+        while index < len(tokens):
+            line = tokens[index]
+            useless = False
+            if line[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
+                register = line[1]
+                useless = True
+                for line2 in tokens[index + 1: ]:
+                    if line2[0] in ("LOD", "STR", "BGE", "JMP", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "PSH", "CAL", "CPY", "BRC", "BNC", "LLOD", "LSTR", "OUT"):
+                        if line2[1] == register: # reads from op1
+                            useless = False
+                            break
+                    if line2[0] in ("ADD", "RSH", "LOD", "STR", "BGE", "NOR", "SUB", "MOV", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CPY", "BRC", "BNC", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "LLOD", "LSTR", "IN", "OUT"):
+                        if line2[2] == register: # reads from op2
+                            useless = False
+                            break
+                    if line2[0] in ("ADD", "BGE", "NOR", "SUB", "AND", "OR", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BLE", "BRC", "BNC", "MLT", "DIV", "MOD", "BSR", "BSL", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "LLOD", "LSTR"):
+                        if line2[3] == register: # reads from op3
+                            useless = False
+                            break
+                    if line2[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
+                        if line2[1] == register: # writes to op1
+                            break
+                    if line2[0] in ("BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "HLT", "BRC", "BNC"):
+                        break # branch or HLT
+            if useless:
+                tokens.pop(index)
+            else:
+                index += 1
         
         return tokens
     
@@ -903,7 +944,10 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
 
     # write before read
-    
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = writeBeforeRead(tokens)
+    if oldTokens != tokens:
+        return tokens
 
 # pair optimisations
     # SETBRANCH
