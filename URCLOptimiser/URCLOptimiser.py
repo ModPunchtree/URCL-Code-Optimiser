@@ -3053,7 +3053,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
         
         return tokens
     
-    def ANDAND(tokens: list, BITS: int) -> list:
+    def ANDAND(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3080,14 +3080,14 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                             else:
                                 good = False
                             if good:
-                                if (1 + number2) < (2 ** BITS):
+                                if True:
                                     tokens[index] = ["AND", line[1], line[2], str(number & number2)]
                                     tokens.pop(index + 1)
                                     return tokens
         
         return tokens
     
-    def XORXOR(tokens: list, BITS: int) -> list:
+    def XORXOR(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3114,7 +3114,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                             else:
                                 good = False
                             if good:
-                                if (1 + number2) < (2 ** BITS):
+                                if True:
                                     tokens[index] = ["XOR", line[1], line[2], str(number ^ number2)]
                                     tokens.pop(index + 1)
                                     return tokens
@@ -3210,7 +3210,8 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                                 temp.append([label2])
                                 for index4, line4 in enumerate(temp):
                                     if line4[0] == "RET":
-                                        temp[index4] = ["JMP", label2]
+                                        temp[index4] = ["INC", "SP", "SP"]
+                                        temp.insert(index4 + 1, ["JMP", label2])
                                 tokens = tokens[: index2] + tokens[index3: ]
                                 tokens = tokens[: index + 1] + temp + tokens[index + 1: ]
                                 tokens[index] = ["DEC", "SP", "SP"]
@@ -3230,6 +3231,27 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                 return tokens
         
         return []
+    
+    def PSHLOD(tokens: list) -> list:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with PSH followed by LOD optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "PSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "LOD":
+                    if line2[2] == "SP":
+                        temp = []
+                        temp.append(["DEC", "SP", "SP"])
+                        temp.append(["STR", "SP", line[1]])
+                        temp.append(["MOV", line2[1], line[1]])
+                        tokens = tokens[: index] + temp + tokens[index + 2: ]
+                        return tokens
+        
+        return tokens
     
     # label/branching optimisations
     # 1 shortcut branches
@@ -3561,13 +3583,19 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
     
     # ANDAND
     oldTokens = [([token for token in line]) for line in tokens]
-    tokens = ANDAND(tokens, BITS)
+    tokens = ANDAND(tokens)
     if oldTokens != tokens:
         return tokens
     
     # XORXOR
     oldTokens = [([token for token in line]) for line in tokens]
-    tokens = XORXOR(tokens, BITS)
+    tokens = XORXOR(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
+    # PSHLOD
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = PSHLOD(tokens)
     if oldTokens != tokens:
         return tokens
     
