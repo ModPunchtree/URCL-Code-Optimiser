@@ -48,16 +48,20 @@
 #################################################################################################
 
 # input fileName
-def URCLTokeniser(fileName: str = "input.urcl") -> tuple[list, tuple]:
+def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple[list, tuple]:
     """
     Takes raw input URCL code.
     
     Returns tokenised URCL and tuple with header information.
     """
+    
     # read file
-    f = open(fileName, "r")
-    file = f.read()
-    f.close()
+    if offline:
+        f = open(fileName, "r")
+        file = f.read()
+        f.close()
+    else:
+        file = fileName
     
     # clean code
     # 1 delete multiline comments
