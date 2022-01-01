@@ -3187,7 +3187,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                             if tokens[index2 - 1][0] in ("JMP", "RET", "HLT"):
                                 index3 = 0
                                 for line2 in tokens[index2: ]:
-                                    if line2[0] in ("JMP", "HLT"): # might break if there's a subroutine
+                                    if line2[0] in ("HLT"): # might break if there's a subroutine
                                         index3 += 1
                                         break
                                     else:

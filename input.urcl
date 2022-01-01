@@ -1,11 +1,88 @@
 
-PSH 69
-CAL .sex
+MINREG 16
+
+OUT %BUFFER 1
+
+IMM r16 1
+IMM r15 31
+IMM r14 27
+IMM r13 2
+CAL .draw_line
+OUT %BUFFER 2
+
 HLT
 
-.sex
-INC SP SP
-LOD R1 SP
-OUT %NUMB R1
-DEC SP SP
-RET
+.draw_line // in r16, r15, r14, r13; var r12, r11, r10, r9, r8, r7, r6, r5, r4 
+    MOV r6 r16
+    MOV r5 r15
+
+    OUT %X r6
+    OUT %Y r5
+    OUT %COLOR 255
+
+    SUB r12 r14 r16
+    IMM r10 1
+    BGE .bx_ge_ax r14 r16
+        IMM r10 -1
+        SUB r12 r16 r14
+    .bx_ge_ax
+
+    BRE .draw_line_eq_y r15 r13
+
+    SUB r11 r13 r15
+    IMM r9 1
+    BGE .by_ge_ay r13 r15
+        IMM r9 -1
+        SUB r11 r15 r13
+    .by_ge_ay
+
+    BRE .draw_line_eq_x r16 r14
+
+    RSH r8 r12 // r8 = r12 >>> 2
+    RSH r7 r11 // r7 = r11 >>> 2
+
+    BRG .else r12 r11 //  if r12 < r11
+        BGE .end r12 r11 
+        INC r8 r8   //      r8++
+    JMP .end        //  else if r12 > r11
+    .else           //
+        INC r7 r7   //      r7++
+    .end
+
+    ADD r4 r12 r11
+    .loop   // for (r4 = r12+r11; r4 != 0; r4--)
+        BGE .cxg r7 r8  //  if r7 < r8
+            SUB r8 r8 r7//      r8 -= r7
+            IMM r7 r11   //      r7 = r11
+            ADD r6 r6 r10  //      r6 += r10
+        JMP .cxg_end
+        .cxg            // else
+            SUB r7 r7 r8//      r7 -= r8
+            IMM r8 r12   //      r8 = r12
+            ADD r5 r5 r9  //      r5 += r9
+        .cxg_end
+        OUT %X r6
+        OUT %Y r5
+        OUT %COLOR 255
+        DEC r4 r4
+        BNZ .loop r4
+    JMP .ret
+
+    .draw_line_eq_y
+        BRE .ret r16 r14
+        .eq_y_loop
+            ADD r6 r6 r10
+            OUT %X r6
+            OUT %COLOR 255
+            BNE .eq_y_loop r6 r14
+        JMP .ret
+
+    .draw_line_eq_x
+        BRE .ret r15 r13
+        .eq_x_loop
+            ADD r5 r5 r9
+            OUT %Y r5
+            OUT %COLOR 255
+            BNE .eq_x_loop r5 r13
+    .ret
+    RET
