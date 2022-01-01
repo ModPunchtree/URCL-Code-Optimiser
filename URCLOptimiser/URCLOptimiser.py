@@ -3212,6 +3212,19 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
         
         return tokens
     
+    def checkForOUT(tokens: list) -> list:
+        """
+        Takes sanitised, tokenised URCL code.
+
+        Returns nothing if no OUT instructions are detected.
+        """
+        
+        for line in tokens:
+            if line[0] == "OUT":
+                return tokens
+        
+        return []
+    
     # label/branching optimisations
     # 1 shortcut branches
     oldTokens = [([token for token in line]) for line in tokens]
@@ -3564,6 +3577,12 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
     if oldTokens != tokens:
         return tokens
 
+    # check for OUT instructions
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = checkForOUT(tokens)
+    if oldTokens != tokens:
+        return tokens
+
     return tokens
 
 def calculateHeaders(tokens: list, rawHeaders: tuple) -> tuple:
@@ -3623,5 +3642,6 @@ def URCLOptimiser(tokens: list, rawHeaders: tuple) -> tuple:
     tokens.insert(2, ["MINHEAP", str(headers[3])])
     tokens.insert(3, ["MINSTACK", str(headers[4])])
     tokens.insert(4, ["RUN", str(headers[5])])
+    tokens.insert(5, [""])
 
     return tokens, headers
