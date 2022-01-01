@@ -138,7 +138,7 @@ def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple
         index = 0
         token = []
         while index < len(line):
-            if (line[index].isalpha()) or (line[index].isnumeric()) or (line[index] in ("&", "%", "#", ".", "$", "~", "-")):
+            if (line[index].isalpha()) or (line[index].isnumeric()) or (line[index] in ("&", "%", "#", ".", "$", "~", "-", "@")):
                 if line[index] == "$":
                     text = "R"
                 elif line[index] == "#":
@@ -188,5 +188,23 @@ def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple
             else:
                 raise Exception(f"FATAL - Unrecognised symbol: {line[index]}")
         tokens.append(token)
+    
+    # resolve macros
+    index = 0
+    while index < len(tokens):
+        line = tokens[index]
+        if len(line) > 0:
+            if line[0] == "@DEFINE":
+                defineName = "@" + line[1]
+                defineValue = " ".join(line[2: ])
+                tokens.pop(index)
+                for index2, line2 in enumerate(tokens):
+                    for index3, token in enumerate(line2):
+                        if token == defineName:
+                            tokens[index2][index3] = defineValue
+            else:
+                index += 1
+        else:
+            index += 1
     
     return tokens, headers

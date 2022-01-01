@@ -1,8 +1,8 @@
 
-IMM R1 5
-CAL .test
+@DEFINE test 5
+
+IMM R1 @test
+ADD R2 R1 R1
+MLT R1 R1 R2
 OUT %PORT R1
 HLT
-.test
-    ADD R1 R1 R1
-    RET
