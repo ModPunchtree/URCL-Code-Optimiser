@@ -891,7 +891,8 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                     if line2[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
                         if line2[1] == register: # writes to op1
                             break
-                    if line2[0] in ("BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "HLT", "BRC", "BNC"):
+                    if line2[0] in ("BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "HLT", "BRC", "BNC", "JMP", "RET"):
+                        useless = False
                         break # branch or HLT
             if useless:
                 tokens.pop(index)
@@ -3116,6 +3117,101 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
+    def inlineBranches(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL with sections of code that are branched to only once, inlined.
+        """
+        
+        for index, line in enumerate(tokens):
+            if line[0] == "JMP":
+                if line[1].startswith("."):
+                    label = line[1]
+                    occurrences = 0
+                    for line2 in tokens:
+                        if label in line2:
+                            occurrences += 1
+                    if occurrences == 2:
+                        index2 = 0
+                        for line2 in tokens:
+                            if line2[0] == label:
+                                break
+                            index2 += 1
+                        if index2 - 1 >= 0:
+                            if tokens[index2 - 1][0] in ("JMP", "RET", "HLT"):
+                                index3 = 0
+                                for line2 in tokens[index2: ]:
+                                    if line2[0] in ("JMP", "HLT"): # might break if there's a subroutine
+                                        index3 += 1
+                                        break
+                                    else:
+                                        index3 += 1
+                                index3 += index2
+                                temp = [([token for token in line2]) for line2 in tokens[index2: index3]]
+                                if index >= index3:
+                                    index -= len(temp)
+                                tokens = tokens[: index2] + tokens[index3: ]
+                                tokens = tokens[: index] + temp + tokens[index + 1: ]
+                                return tokens
+        
+        return tokens
+    
+    def inlineCalls(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL with sections of code that are called only once, inlined.
+        """
+        
+        for index, line in enumerate(tokens):
+            if line[0] == "CAL":
+                if line[1].startswith("."):
+                    label = line[1]
+                    occurrences = 0
+                    for line2 in tokens:
+                        if label in line2:
+                            occurrences += 1
+                    if occurrences == 2:
+                        index2 = 0
+                        for line2 in tokens:
+                            if line2[0] == label:
+                                break
+                            index2 += 1
+                        if index2 - 1 >= 0:
+                            if tokens[index2 - 1][0] in ("JMP", "RET", "HLT"):
+                                index3 = 0
+                                for line2 in tokens[index2: ]:
+                                    if line2[0] in ("JMP", "HLT"): # might break if there's a subroutine
+                                        index3 += 1
+                                        break
+                                    else:
+                                        index3 += 1
+                                index3 += index2
+                                temp = [([token for token in line2]) for line2 in tokens[index2: index3]]
+                                if index >= index3:
+                                    index -= len(temp)
+                                label2 = ".0"
+                                good = False
+                                while not(good):
+                                    for line2 in tokens:
+                                        bad = False
+                                        if line2[0] == label2:
+                                            label2 = str("." + int(label2[1: ]) + 1)
+                                            bad = True
+                                            break
+                                    if not(bad):
+                                        good = True
+                                temp.append([label2])
+                                for index4, line4 in enumerate(temp):
+                                    if line4[0] == "RET":
+                                        temp[index4] = ["JMP", label2]
+                                tokens = tokens[: index2] + tokens[index3: ]
+                                tokens = tokens[: index] + temp + tokens[index + 1: ]
+                                return tokens
+        
+        return tokens
+    
     # label/branching optimisations
     # 1 shortcut branches
     oldTokens = [([token for token in line]) for line in tokens]
@@ -3457,9 +3553,43 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         return tokens
     
     # inline branches
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = inlineBranches(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
     # inline calls (convert CAL to core then inline branches, if different keep, else return original)
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = inlineCalls(tokens)
+    if oldTokens != tokens:
+        return tokens
 
     return tokens
+
+def calculateHeaders(tokens: list[list[str]], rawHeaders: tuple) -> tuple:
+    """
+    Takes sanitised, tokenised URCL code and the rawHeaders.
+    
+    Calculates the new optimised header values, then returns them.
+    """
+    
+    BITS = rawHeaders[0]
+    bitsOperator = rawHeaders[1]
+    MINREG = 0
+    MINHEAP = rawHeaders[3]
+    MINSTACK = rawHeaders[4]
+    RUN = rawHeaders[5]
+    
+    for line in tokens:
+        for token in line:
+            if token.startswith("R"):
+                if token[1: ].isnumeric():
+                    number = int(token[1:])
+                    if number > MINREG:
+                        MINREG = number
+    
+    headers = (BITS, bitsOperator, MINREG, MINHEAP, MINSTACK, RUN)
+    return headers
 
 # input MINREG, BITS, list of tokens
 def URCLOptimiser(tokens: list[list[str]], rawHeaders: tuple[int, str, int, int, int, str]) -> tuple[list[list[str]], tuple[int, str, int, int, int, str]]:
@@ -3486,6 +3616,12 @@ def URCLOptimiser(tokens: list[list[str]], rawHeaders: tuple[int, str, int, int,
         tokens = recursiveOptimisations(tokens, rawHeaders[0])
 
     # calculate optimsied headers
-    #####################################################
+    headers = calculateHeaders(tokens, rawHeaders)
 
-    return tokens, rawHeaders
+    tokens.insert(0, ["BITS", headers[1], str(headers[0])])
+    tokens.insert(1, ["MINREG", str(headers[2])])
+    tokens.insert(2, ["MINHEAP", str(headers[3])])
+    tokens.insert(3, ["MINSTACK", str(headers[4])])
+    tokens.insert(4, ["RUN", str(headers[5])])
+
+    return tokens, headers

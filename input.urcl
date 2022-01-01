@@ -1,3 +1,7 @@
 
-ADD R1 R1 R1
+CAL .test
 OUT %PORT R1
+HLT
+.test
+    LSH R1 R1
+    RET
