@@ -1,5 +1,5 @@
 
-@DEFINE test 5
+@DEFINE test '5'
 
 IMM r1 @test
 ADD R2 R1 R1

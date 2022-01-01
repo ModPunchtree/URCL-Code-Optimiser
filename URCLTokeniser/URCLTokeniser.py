@@ -138,7 +138,7 @@ def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple
         index = 0
         token = []
         while index < len(line):
-            if (line[index].isalpha()) or (line[index].isnumeric()) or (line[index] in ("&", "%", "#", ".", "$", "~", "-", "@")):
+            if (line[index].isalpha()) or (line[index].isnumeric()) or (line[index] in ("&", "%", "#", ".", "$", "~", "-", "@", "'")):
                 if line[index] == "$":
                     text = "R"
                 elif line[index] == "#":
