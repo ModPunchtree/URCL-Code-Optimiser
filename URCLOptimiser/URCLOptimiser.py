@@ -3202,7 +3202,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                                     for line2 in tokens:
                                         bad = False
                                         if line2[0] == label2:
-                                            label2 = str("." + int(label2[1: ]) + 1)
+                                            label2 = "." + str(int(label2[1: ]) + 1)
                                             bad = True
                                             break
                                     if not(bad):
@@ -3250,6 +3250,54 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         temp.append(["MOV", line2[1], line[1]])
                         tokens = tokens[: index] + temp + tokens[index + 2: ]
                         return tokens
+        
+        return tokens
+    
+    def CALtoCore(tokens: list) -> list:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with CAL label instructions translated into core instructions.
+        """
+        
+        for index, line in enumerate(tokens):
+            if line[0] == "CAL":
+                if line[1].startswith("."):
+                    label = line[1]
+                    uniqueLabel = ".return_0"
+                    good = False
+                    while not(good):
+                        bad = False
+                        for line in tokens:
+                            if line[0] == uniqueLabel:
+                                uniqueLabel = ".return_" + str(int(uniqueLabel[8: ]) + 1)
+                                bad = True
+                                break
+                        if not(bad):
+                            good = True
+                    temp = []
+                    temp.append(["PSH", uniqueLabel])
+                    temp.append(["JMP", label])
+                    temp.append([uniqueLabel])
+                    tokens = tokens[: index] + temp + tokens[index + 1: ]
+                    return tokens
+        
+        return tokens
+    
+    def RETlabel(tokens: list) -> list:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with RET followed by a return label, optimised.
+        
+        WARNING - Not 100% safe if there are multiple functions.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "RET":
+                line2 = tokens[index + 1]
+                if line2[0].startswith(".return_"):
+                    tokens[index] = ["INC", "SP", "SP"]
         
         return tokens
     
@@ -3605,11 +3653,23 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
     if oldTokens != tokens:
         return tokens
     
-    # inline calls (convert CAL to core then inline branches, if different keep, else return original)
+    # convert CAL to core
     oldTokens = [([token for token in line]) for line in tokens]
-    tokens = inlineCalls(tokens)
+    tokens = CALtoCore(tokens)
     if oldTokens != tokens:
         return tokens
+    
+    # optimise RET followed by .return_x label
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = RETlabel(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
+    # inline calls (convert CAL to core then inline branches, if different keep, else return original)
+    #oldTokens = [([token for token in line]) for line in tokens]
+    #tokens = inlineCalls(tokens)
+    #if oldTokens != tokens:
+    #    return tokens
 
     # check for OUT instructions
     oldTokens = [([token for token in line]) for line in tokens]
