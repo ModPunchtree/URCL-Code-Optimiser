@@ -2787,6 +2787,335 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
+    def RSHSRS(tokens: list[list[str]]) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with RSH followed by SRS optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "RSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "SRS":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            tokens[index] = ["BSR", line[1], line[2], "2"]
+                            tokens.pop(index + 1)
+                            return tokens
+        
+        return tokens
+    
+    def RSHBSS(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with RSH followed by BSS optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "RSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSS":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if (1 + number2) < (2 ** BITS):
+                                    tokens[index] = ["BSR", line[1], line[2], str(1 + number2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
+        
+        return tokens
+    
+    def LSHRSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with LSH followed by RSH optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "LSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "RSH":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if good:
+                                if True:
+                                    tokens[index] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - 2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
+        
+        return tokens
+    
+    def RSHLSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with RSH followed by LSH optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "RSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "LSH":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if good:
+                                if True:
+                                    tokens[index] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - 2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
+        
+        return tokens
+    
+    def LSHBSR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with LSH followed by BSR optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "LSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSR":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if (1 + number2) < (2 ** BITS):
+                                    tokens[index] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - 1)]
+                                    tokens[index + 1] = ["BSR", line[1], line[2], str(number2 - 1)]
+                                    return tokens
+        
+        return tokens
+    
+    def BSRLSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with BSR followed by LSH optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "BSR":
+                line2 = tokens[index + 1]
+                if line2[0] == "LSH":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if good:
+                                if (number + 1) < (2 ** BITS):
+                                    tokens[index] = ["BSR", line[1], line[2], str(number - 1)]
+                                    tokens[index + 1] = ["AND", line[1], line[2], str((2 ** BITS) - 2)]
+                                    return tokens
+        
+        return tokens
+    
+    def RSHBSL(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with RSH followed by BSL optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "RSH":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSL":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if (1 + number2) < (2 ** BITS):
+                                    tokens[index] = ["AND", line[1], line[2], str((2 ** BITS) - 2)]
+                                    tokens[index + 1] = ["BSL", line[1], line[2], str(number2 - 1)]
+                                    return tokens
+        
+        return tokens
+    
+    def BSLRSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with BSL followed by RSH optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "BSL":
+                line2 = tokens[index + 1]
+                if line2[0] == "RSH":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if good:
+                                if (number + 1) < (2 ** BITS):
+                                    tokens[index] = ["BSL", line[1], line[2], str(number - 1)]
+                                    tokens[index + 1] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - 1)]
+                                    return tokens
+        
+        return tokens
+    
+    def BSLBSR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with BSL followed by BSR optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "BSL":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSR":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if number >= number2:
+                                    tokens[index] = ["BSL", line[1], line[2], str(number - number2)]
+                                    tokens[index + 1] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - ((2 ** BITS) - (1 << (BITS - number2))))]
+                                    return tokens
+                                else:
+                                    tokens[index] = ["BSR", line[1], line[2], str(number2 - number)]
+                                    tokens[index + 1] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - ((2 ** BITS) - (1 << (BITS - number))))]
+                                    return tokens
+        
+        return tokens
+    
+    def BSRBSL(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with BSR followed by BSL optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "BSR":
+                line2 = tokens[index + 1]
+                if line2[0] == "BSL":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            else:
+                                good = False
+                            if good:
+                                if number >= number2:
+                                    tokens[index] = ["BSR", line[1], line[2], str(number - number2)]
+                                    tokens[index + 1] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - ((1 << number2) - 1))]
+                                    return tokens
+                                else:
+                                    tokens[index] = ["BSL", line[1], line[2], str(number2 - number)]
+                                    tokens[index + 1] = ["AND", line[1], line[2], str((2 ** (BITS - 1)) - ((1 << number) - 1))]
+                                    return tokens
+        
+        return tokens
+    
+    def ANDAND(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double AND optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "AND":
+                line2 = tokens[index + 1]
+                if line2[0] == "AND":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            elif line[2].isnumeric():
+                                number = int(line[2])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            elif line2[2].isnumeric():
+                                number2 = int(line2[2])
+                            else:
+                                good = False
+                            if good:
+                                if (1 + number2) < (2 ** BITS):
+                                    tokens[index] = ["AND", line[1], line[2], str(number & number2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
+        
+        return tokens
+    
+    def XORXOR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with double XOR optimised.
+        """
+        
+        for index, line in enumerate(tokens[: -1]):
+            if line[0] == "XOR":
+                line2 = tokens[index + 1]
+                if line2[0] == "XOR":
+                    if line[1] == line2[1]:
+                        if line[1] == line2[2]:
+                            good = True
+                            if line[3].isnumeric():
+                                number = int(line[3])
+                            elif line[2].isnumeric():
+                                number = int(line[2])
+                            else:
+                                good = False
+                            if line2[3].isnumeric():
+                                number2 = int(line2[3])
+                            elif line2[2].isnumeric():
+                                number2 = int(line2[2])
+                            else:
+                                good = False
+                            if good:
+                                if (1 + number2) < (2 ** BITS):
+                                    tokens[index] = ["XOR", line[1], line[2], str(number ^ number2)]
+                                    tokens.pop(index + 1)
+                                    return tokens
+        
+        return tokens
+    
     # label/branching optimisations
     # 1 shortcut branches
     oldTokens = [([token for token in line]) for line in tokens]
@@ -3055,23 +3384,77 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
     
     # simplify
     # RSHSRS
-    
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = RSHSRS(tokens)
+    if oldTokens != tokens:
+        return tokens
     
     # RSHBSS
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = RSHBSS(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
     
     # bitmasks
     # LSHRSH
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = LSHRSH(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # RSHLSH
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = RSHLSH(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # LSHBSR
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = LSHBSR(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # BSRLSH
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = BSRLSH(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # RSHBSL
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = RSHBSL(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # BSLRSH
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = BSLRSH(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # BSLBSR
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = BSLBSR(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
+    
     # BSRBSL
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = BSRBSL(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
     
     # ANDAND
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = ANDAND(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
     
     # XORXOR
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = XORXOR(tokens, BITS)
+    if oldTokens != tokens:
+        return tokens
     
     # inline branches
     # inline calls (convert CAL to core then inline branches, if different keep, else return original)
