@@ -44,7 +44,7 @@ async def on_message(message):
     elif message.content.startswith("$optimise"):
         await message.channel.send("Compiling...")
         try:
-            tokens, rawHeaders = URCLTokeniser(message.content[10: ])
+            tokens, rawHeaders = URCLTokeniser(message.content[10: ], False)
             tokens, headers = URCLOptimiser(tokens, rawHeaders)
             text = ""
             for line in tokens:
