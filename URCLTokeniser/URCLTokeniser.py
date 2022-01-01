@@ -176,6 +176,9 @@ def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple
                         text = str(((2 ** (BITS // 2)) - 1) << (BITS // 2))
                     elif text == "&LHALF":
                         text = str((2 ** (BITS // 2)) - 1) # doesn't work for odd numbers of bits
+                if text.startswith(("R", "r")) and (len(text) > 1):
+                    if text[1: ].isnumeric():
+                        text = "R" + text[1: ]
                 if text == "R0":
                     token.append("0")
                 else:
