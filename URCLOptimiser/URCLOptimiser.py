@@ -144,7 +144,7 @@
 ######################################################################################################
 ######################################################################################################
 
-def convertRelativesToLabels(tokens: list[list[str]], uniqueNumber: int = 0) -> list[list[str]]:
+def convertRelativesToLabels(tokens: list, uniqueNumber: int = 0) -> list:
     """
     Takes sanitised, tokenised URCL code and optionally a unique number for the label name.
     
@@ -176,7 +176,7 @@ def convertRelativesToLabels(tokens: list[list[str]], uniqueNumber: int = 0) -> 
                 return convertRelativesToLabels(tokens, uniqueNumber)
     return tokens
 
-def deleteDuplicateLabels(tokens: list[list[str]]) -> list[list[str]]:
+def deleteDuplicateLabels(tokens: list) -> list:
     """
     Takes sanitised, tokenised URCL code.
     
@@ -200,7 +200,7 @@ def deleteDuplicateLabels(tokens: list[list[str]]) -> list[list[str]]:
     
     return tokens
 
-def moveDWValues(tokens: list[list[str]]) -> list[list[str]]:
+def moveDWValues(tokens: list) -> list:
     """
     Takes sanitised, tokenised URCL code.
     
@@ -231,14 +231,14 @@ def moveDWValues(tokens: list[list[str]]) -> list[list[str]]:
     
     return tokens
 
-def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+def recursiveOptimisations(tokens: list, BITS: int) -> list:
     """
     Takes sanitised, tokenised URCL code and the word length BITS.
     
     Tries to return URCL code with an optimisation applied, otherwise returns unoptimised code.
     """
     
-    def shortcutBranches(tokens: list[list[str]]) -> list[list[str]]:
+    def shortcutBranches(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -257,7 +257,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def deleteUselessBranches(tokens: list[list[str]]) -> list[list[str]]:
+    def deleteUselessBranches(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -279,7 +279,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def deleteUselessLabels(tokens: list[list[str]]) -> list[list[str]]:
+    def deleteUselessLabels(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -305,7 +305,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def deleteUnreachableCode(tokens: list[list[str]]) -> list[list[str]]:
+    def deleteUnreachableCode(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -326,7 +326,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def constantFold(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def constantFold(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -831,7 +831,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def projectImmediates(tokens: list[list[str]]) -> list[list[str]]:
+    def projectImmediates(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -861,7 +861,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def writeBeforeRead(tokens: list[list[str]]) -> list[list[str]]:
+    def writeBeforeRead(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -901,7 +901,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def SETBranch(tokens: list[list[str]]) -> list[list[str]]:
+    def SETBranch(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -952,7 +952,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
 
         return tokens
     
-    def LODSTR(tokens: list[list[str]]) -> list[list[str]]:
+    def LODSTR(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -970,7 +970,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def STRLOD(tokens: list[list[str]]) -> list[list[str]]:
+    def STRLOD(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -992,7 +992,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def singleInstructionOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def singleInstructionOptimisations(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -1791,7 +1791,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def PSHPOP(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def PSHPOP(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -1809,7 +1809,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def POPPSH(tokens: list[list[str]]) -> list[list[str]]:
+    def POPPSH(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -1831,7 +1831,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def ADDADD(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def ADDADD(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -1877,7 +1877,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def SUBSUB(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def SUBSUB(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -1919,7 +1919,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 
         return tokens
     
-    def INCINC(tokens: list[list[str]]) -> list[list[str]]:
+    def INCINC(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -1938,7 +1938,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def DECDEC(tokens: list[list[str]]) -> list[list[str]]:
+    def DECDEC(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -1957,7 +1957,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def ADDSUB(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def ADDSUB(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2001,7 +2001,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def ADDINC(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def ADDINC(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2041,7 +2041,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def ADDDEC(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def ADDDEC(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2081,7 +2081,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def SUBINC(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def SUBINC(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2119,7 +2119,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 
         return tokens
     
-    def SUBDEC(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def SUBDEC(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2157,7 +2157,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                 
         return tokens
     
-    def INCDEC(tokens: list[list[str]]) -> list[list[str]]:
+    def INCDEC(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2176,7 +2176,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def SUBADD(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def SUBADD(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2220,7 +2220,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def INCADD(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def INCADD(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2260,7 +2260,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def DECADD(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def DECADD(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2300,7 +2300,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def INCSUB(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def INCSUB(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2338,7 +2338,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def DECSUB(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def DECSUB(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2376,7 +2376,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def DECINC(tokens: list[list[str]]) -> list[list[str]]:
+    def DECINC(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2395,7 +2395,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def MLTMLT(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def MLTMLT(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2443,7 +2443,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
                             
         return tokens
     
-    def DIVDIV(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def DIVDIV(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2485,7 +2485,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def LSHLSH(tokens: list[list[str]]) -> list[list[str]]:
+    def LSHLSH(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2504,7 +2504,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def RSHRSH(tokens: list[list[str]]) -> list[list[str]]:
+    def RSHRSH(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2523,7 +2523,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def SRSSRS(tokens: list[list[str]]) -> list[list[str]]:
+    def SRSSRS(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2542,7 +2542,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSLBSL(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSLBSL(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2572,7 +2572,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSRBSR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSRBSR(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2602,7 +2602,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSSBSS(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSSBSS(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2632,7 +2632,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def LSHBSL(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def LSHBSL(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2658,7 +2658,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSLLSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSLLSH(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2684,7 +2684,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def RSHBSR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def RSHBSR(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2710,7 +2710,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSRRSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSRRSH(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2736,7 +2736,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def SRSBSS(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def SRSBSS(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2762,7 +2762,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSSSRS(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSSSRS(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2788,7 +2788,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def RSHSRS(tokens: list[list[str]]) -> list[list[str]]:
+    def RSHSRS(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2807,7 +2807,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def RSHBSS(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def RSHBSS(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2833,7 +2833,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def LSHRSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def LSHRSH(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2855,7 +2855,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def RSHLSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def RSHLSH(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2877,7 +2877,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def LSHBSR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def LSHBSR(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2903,7 +2903,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSRLSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSRLSH(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2929,7 +2929,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def RSHBSL(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def RSHBSL(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2955,7 +2955,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSLRSH(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSLRSH(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -2981,7 +2981,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSLBSR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSLBSR(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3015,7 +3015,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def BSRBSL(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def BSRBSL(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3049,7 +3049,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def ANDAND(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def ANDAND(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3083,7 +3083,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def XORXOR(tokens: list[list[str]], BITS: int) -> list[list[str]]:
+    def XORXOR(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3117,7 +3117,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def inlineBranches(tokens: list[list[str]]) -> list[list[str]]:
+    def inlineBranches(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3157,7 +3157,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
         
         return tokens
     
-    def inlineCalls(tokens: list[list[str]]) -> list[list[str]]:
+    def inlineCalls(tokens: list) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
@@ -3566,7 +3566,7 @@ def recursiveOptimisations(tokens: list[list[str]], BITS: int) -> list[list[str]
 
     return tokens
 
-def calculateHeaders(tokens: list[list[str]], rawHeaders: tuple) -> tuple:
+def calculateHeaders(tokens: list, rawHeaders: tuple) -> tuple:
     """
     Takes sanitised, tokenised URCL code and the rawHeaders.
     
@@ -3592,7 +3592,7 @@ def calculateHeaders(tokens: list[list[str]], rawHeaders: tuple) -> tuple:
     return headers
 
 # input MINREG, BITS, list of tokens
-def URCLOptimiser(tokens: list[list[str]], rawHeaders: tuple[int, str, int, int, int, str]) -> tuple[list[list[str]], tuple[int, str, int, int, int, str]]:
+def URCLOptimiser(tokens: list, rawHeaders: tuple[int, str, int, int, int, str]) -> tuple[list, tuple[int, str, int, int, int, str]]:
     """
     Takes sanitised, tokenised URCL code.
     
