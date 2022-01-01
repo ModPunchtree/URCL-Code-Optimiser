@@ -1,7 +1,4 @@
 
-CAL .test
+IMM R1 5
 OUT %PORT R1
 HLT
-.test
-    LSH R1 R1
-    RET

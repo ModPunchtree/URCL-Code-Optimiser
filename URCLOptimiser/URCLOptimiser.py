@@ -891,9 +891,11 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                     if line2[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
                         if line2[1] == register: # writes to op1
                             break
-                    if line2[0] in ("BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "HLT", "BRC", "BNC", "JMP", "RET"):
+                    if line2[0] in ("BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "BRC", "BNC", "JMP", "RET"):
                         useless = False
                         break # branch or HLT
+                    if line2[0] == "HLT":
+                        break
             if useless:
                 tokens.pop(index)
             else:
