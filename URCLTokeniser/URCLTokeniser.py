@@ -48,7 +48,7 @@
 #################################################################################################
 
 # input fileName
-def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple[list, tuple]:
+def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple:
     """
     Takes raw input URCL code.
     
