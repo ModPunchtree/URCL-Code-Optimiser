@@ -3592,7 +3592,7 @@ def calculateHeaders(tokens: list, rawHeaders: tuple) -> tuple:
     return headers
 
 # input MINREG, BITS, list of tokens
-def URCLOptimiser(tokens: list, rawHeaders: tuple[int, str, int, int, int, str]) -> tuple[list, tuple[int, str, int, int, int, str]]:
+def URCLOptimiser(tokens: list, rawHeaders: tuple) -> tuple:
     """
     Takes sanitised, tokenised URCL code.
     
