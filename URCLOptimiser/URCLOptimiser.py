@@ -3134,7 +3134,8 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                     for line2 in tokens:
                         if label in line2:
                             occurrences += 1
-                    if occurrences == 2:
+                    #if occurrences == 2:
+                    if True:
                         index2 = 0
                         for line2 in tokens:
                             if line2[0] == label:
@@ -3172,9 +3173,9 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                     label = line[1]
                     occurrences = 0
                     for line2 in tokens:
-                        if label in line2:
+                        if (label in line2) and (line2[0] == "CAL"):
                             occurrences += 1
-                    if occurrences == 2:
+                    if occurrences == 1:
                         index2 = 0
                         for line2 in tokens:
                             if line2[0] == label:

@@ -1,8 +1,16 @@
 
-@DEFINE test '5'
-
-IMM r1 @test
-ADD R2 R1 R1
-MLT R1 R1 R2
+CAL .test
 OUT %PORT R1
 HLT
+
+.test
+    IN R1 %RNG
+    BRE .test R1 5
+    BRE .next R1 10
+
+.ret
+    RET
+
+.next
+    INC R1 R1
+    RET
