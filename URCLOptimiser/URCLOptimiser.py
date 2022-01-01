@@ -856,7 +856,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if line2[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
                             if line2[1] == register: # write to op1
                                 break
-                        if (line2[0].startswith(".")) or (line2[0] in ("JMP", "HLT", "RET")):
+                        if (line2[0].startswith(".")) or (line2[0] in ("JMP", "HLT", "RET", "CAL")):
                             break # label or JMP, RET, HLT
         
         return tokens

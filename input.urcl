@@ -1,4 +1,8 @@
 
 IMM R1 5
+CAL .test
 OUT %PORT R1
 HLT
+.test
+    ADD R1 R1 R1
+    RET
