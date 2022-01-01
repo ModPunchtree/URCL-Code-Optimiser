@@ -1139,6 +1139,8 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                 elif ops[1].isnumeric():
                     tokens[index][0] = "IMM"
                     index += 1
+                elif ops[0] == ops[1]:
+                    tokens.pop(index)
                 else:
                     index += 1
             
@@ -1874,7 +1876,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] in line2[2: ]:
                                 tokens[index] = ["ADD", line[1], line[2], str(correctValue(number + number2, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -1916,7 +1918,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] in line2[2: ]:
                                 tokens[index] = ["SUB", line[1], line[2], str(correctValue(number + number2, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
                 
         return tokens
@@ -1935,7 +1937,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                     if line[1] == line2[1]:
                         if line[1] == line2[2]:
                             tokens[index] = ["ADD", line[1], line[2], "2"]
-                            tokens.pop[index + 1]
+                            tokens.pop(index + 1)
                             return tokens
         
         return tokens
@@ -1954,7 +1956,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                     if line[1] == line2[1]:
                         if line[1] == line2[2]:
                             tokens[index] = ["SUB", line[1], line[2], "2"]
-                            tokens.pop[index + 1]
+                            tokens.pop(index + 1)
                             return tokens
         
         return tokens
@@ -1998,7 +2000,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] == line2[2]:
                                 tokens[index] = ["ADD", line[1], line[2], str(correctValue(number - number2, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2038,7 +2040,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] == line2[2]:
                                 tokens[index] = ["ADD", line[1], line[2], str(correctValue(number + 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2078,7 +2080,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] == line2[2]:
                                 tokens[index] = ["ADD", line[1], line[2], str(correctValue(number - 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2116,7 +2118,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] == line2[2]:
                                 tokens[index] = ["SUB", line[1], line[2], str(correctValue(number - 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
                 
         return tokens
@@ -2154,7 +2156,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] == line2[2]:
                                 tokens[index] = ["SUB", line[1], line[2], str(correctValue(number + 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
                 
         return tokens
@@ -2173,7 +2175,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                     if line[1] == line2[1]:
                         if line[1] == line2[2]:
                             tokens[index] = ["MOV", line[1], line[2]]
-                            tokens.pop[index + 1]
+                            tokens.pop(index + 1)
                             return tokens
         
         return tokens
@@ -2217,7 +2219,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] in line2[2: ]:
                                 tokens[index] = ["SUB", line[1], line[2], str(correctValue(number2 - number, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2257,7 +2259,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] in line2[2: ]:
                                 tokens[index] = ["ADD", line[1], line[2], str(correctValue(number + 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2297,7 +2299,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] in line2[2: ]:
                                 tokens[index] = ["ADD", line[1], line[2], str(correctValue(number - 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2335,7 +2337,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] == line2[2]:
                                 tokens[index] = ["SUB", line[1], line[2], str(correctValue(number - 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2373,7 +2375,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                         if good:
                             if line[1] == line2[2]:
                                 tokens[index] = ["SUB", line[1], line[2], str(correctValue(number + 1, BITS))]
-                                tokens.pop[index + 1]
+                                tokens.pop(index + 1)
                                 return tokens
         
         return tokens
@@ -2392,7 +2394,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                     if line[1] == line2[1]:
                         if line[1] == line2[2]:
                             tokens[index] = ["MOV", line[1], line[2]]
-                            tokens.pop[index + 1]
+                            tokens.pop(index + 1)
                             return tokens
         
         return tokens
@@ -3210,7 +3212,8 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                                     if line4[0] == "RET":
                                         temp[index4] = ["JMP", label2]
                                 tokens = tokens[: index2] + tokens[index3: ]
-                                tokens = tokens[: index] + temp + tokens[index + 1: ]
+                                tokens = tokens[: index + 1] + temp + tokens[index + 1: ]
+                                tokens[index] = ["DEC", "SP", "SP"]
                                 return tokens
         
         return tokens
