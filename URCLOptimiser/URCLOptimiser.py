@@ -249,7 +249,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
             if line[0] in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "BRC", "BNC"):
                 if line[1].startswith("."):
                     label = line[1]
-                    for index2, line2 in enumerate(tokens):
+                    for index2, line2 in enumerate(tokens[: -1]):
                         if line2[0] == label:
                             if tokens[index2 + 1][0] == "JMP":
                                 label2 = tokens[index2 + 1][1]
@@ -3298,6 +3298,25 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                 line2 = tokens[index + 1]
                 if line2[0].startswith(".return_"):
                     tokens[index] = ["INC", "SP", "SP"]
+                    return tokens
+        
+        return tokens
+    
+    def JMPRET(tokens: list) -> list:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with JMP to RET optimised.
+        """
+        
+        for index, line in enumerate(tokens):
+            if line[0] == "JMP":
+                if line[1].startswith("."):
+                    label = line[1]
+                    for index2, line2 in enumerate(tokens[: -1]):
+                        if line2[0] == label:
+                            if tokens[index2 + 1][0] == "RET":
+                                tokens[index] = ["RET"]
         
         return tokens
     
@@ -3662,6 +3681,12 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
     # optimise RET followed by .return_x label
     oldTokens = [([token for token in line]) for line in tokens]
     tokens = RETlabel(tokens)
+    if oldTokens != tokens:
+        return tokens
+    
+    # shortcut JMP to RET
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = JMPRET(tokens)
     if oldTokens != tokens:
         return tokens
     
