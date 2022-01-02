@@ -1136,7 +1136,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
             elif op == "MOV":
                 if ops[0] == "0":
                     tokens.pop(index)
-                elif ops[1].isnumeric():
+                elif (ops[1].isnumeric()) or (ops[1].startswith(".")):
                     tokens[index][0] = "IMM"
                     index += 1
                 elif ops[0] == ops[1]:
