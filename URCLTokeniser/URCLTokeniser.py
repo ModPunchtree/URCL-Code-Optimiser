@@ -179,6 +179,8 @@ def URCLTokeniser(fileName: str = "input.urcl", offline: bool = "True") -> tuple
                 if text.startswith(("R", "r")) and (len(text) > 1):
                     if text[1: ].isnumeric():
                         text = "R" + text[1: ]
+                if (len(token) == 0) and (not(text.startswith("."))):
+                    text = text.upper()
                 if text == "R0":
                     token.append("0")
                 else:
