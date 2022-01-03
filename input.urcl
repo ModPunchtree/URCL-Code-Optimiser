@@ -4,6 +4,8 @@ cal .strlen
 cal .printStr
 hlt
 .msg
+DW ['t' 'e' 's' 't']
+DW 0
 .print
 imm r2 0
 .printLoop
@@ -41,5 +43,3 @@ inc r2 r2
 jmp .strlenLoop
 .strlenEnd
 ret
-
-

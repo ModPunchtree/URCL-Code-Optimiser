@@ -835,11 +835,11 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
         """
         Takes sanitised, tokenised URCL code.
         
-        Returns URCL code with values from IMM instructions projected forwards.
+        Returns URCL code with values from IMM and MOV instructions projected forwards.
         """
         
         for index, line in enumerate(tokens):
-            if line[0] == "IMM":
+            if line[0] in ("IMM", "MOV"):
                 if line[1] != "0":
                     register = line[1]
                     immediate = line[2]
@@ -3320,6 +3320,145 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
         
         return tokens
     
+    def traceReturnAddress(tokens: list) -> list:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with PSH followed by RET optimised.
+        """
+        
+        for index, line in enumerate(tokens):
+            if line[0] == "PSH":
+                if line[1].startswith("."):
+                    label = line[1]
+                    index2 = 0
+                    good = True
+                    for line2 in tokens[index + 1: ]:
+                        if (line2[0] == "JMP") or (line2[0].startswith(".")):
+                            good = False
+                            break
+                        if line2[0] == "LOD":
+                            if line2[2] == label:
+                                tokens[index + index2 + 1] = ["IMM", line2[1], label]
+                                return tokens
+                        if line2.count("SP") > 0:
+                            good = False
+                            break
+                        if line2[0] == "RET":
+                            break
+                        index2 += 1
+                    if good:
+                        tokens[index + index2 + 1] = ["INC", "SP", "SP"]
+                        tokens.insert(index + index2 + 1 + 1, ["JMP", label])
+                        return tokens
+        
+        return tokens
+    
+    def projectPSH(tokens: list) -> list:
+        """
+        Takes sanitised, tokenised URCL code.
+        
+        Returns URCL code with PSH or STR to SP, followed by an instruction that reads from the stack, optimised.
+        """
+        
+        for index, line in enumerate(tokens):
+            good = False
+            if line[0] == "PSH":
+                value = line[1]
+                good = True
+            elif line[0] == "STR":
+                if line[1] == "SP":
+                    value = line[2]
+                    good = True
+            if good:
+                for index2, line2 in enumerate(tokens[index + 1: ]):
+                    if (line2[0] == "JMP") or (line2[0].startswith(".") and line2[0] != value):
+                        break
+                    if line2[0].startswith("."):
+                        count = 0
+                        for line3 in tokens:
+                            count += line3.count(line2[0])
+                        if count > 2:
+                            break
+                    if line2[0] in ("ADD", "RSH", "NOR", "SUB", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "POP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "SETC", "SETNC", "IN"):
+                        if (line2[1] == "SP") or (line2[1] == value):
+                            break
+                    if line2[0] == "LOD":
+                        if line2[2] == "SP":
+                            tokens[index + index2 + 1] = ["IMM", line2[1], value]
+                            return tokens
+                    elif line2[0] == "POP":
+                        tokens[index + index2 + 1] = ["INC", "SP", "SP"]
+                        tokens.insert(index + index2 + 2, ["IMM", line2[1], value])
+                        return tokens
+                    elif line2[0] == "RET":
+                        tokens[index + index2 + 1] = ["INC", "SP", "SP"]
+                        tokens.insert(index + index2 + 2, ["JMP", value])
+                        return tokens
+                    elif line2[0] == "HLT":
+                        if line[0] == "PSH":
+                            tokens[index] = ["DEC", "SP", "SP"]
+                        elif line[0] == "STR":
+                            tokens.pop(index)
+                        return tokens
+                
+        return tokens
+    
+    def findRepeatingCode(tokens: list) -> list:
+        """
+        
+        """
+        
+        def renameLabel(label: str, label2: str, tokens: list) -> list:
+            """
+            Takes sanitised, tokenised URCL code.
+        
+            Returns URCL code with label2 replaced with label.
+            """
+            
+            for index, line in enumerate(tokens):
+                for lol in range(line.count(label2)):
+                    tokens[index][line.index(label2)] = label
+                    # might not work because python is inconsistent with how lists and for loops work
+            
+            return tokens
+        
+        codeIndex = 1
+        while codeIndex < len(tokens):
+            good = True
+            while not(tokens[codeIndex][0].startswith(".") and (tokens[codeIndex - 1][0] in ("JMP", "HLT", "RET"))):
+                codeIndex += 1
+                if codeIndex >= len(tokens):
+                    good = False
+                    break
+            if good:
+                label = tokens[codeIndex][0]
+                code = []
+                for line in tokens[codeIndex: ]:
+                    if line[0] in ("HLT", "JMP", "RET"):
+                        code.append(line)
+                        break
+                    code.append(line)
+                if codeIndex + len(code) < len(tokens):
+                    codeIndex2 = codeIndex + len(code)
+                    for index, line in enumerate(tokens[codeIndex2: ]):
+                        match = True
+                        for index2, line2 in enumerate(tokens[codeIndex2 + index: ]):
+                            if line2 != code[index2 + 1]:
+                                match = False
+                                break
+                            if index2 == len(code) - 2:
+                                break
+                        if match and (tokens[codeIndex2 + index - 1][0].startswith(".")):
+                            label2 = tokens[codeIndex2 + index - 1][0]
+                            if True:
+                                tokens = renameLabel(label, label2, tokens)
+                                tokens = tokens[: codeIndex2 + index - 1] + tokens[codeIndex2 + index - 1 + len(code): ]
+                                return tokens
+            codeIndex += 1
+                            
+        return tokens
+    
     # label/branching optimisations
     # 1 shortcut branches
     oldTokens = [([token for token in line]) for line in tokens]
@@ -3679,10 +3818,10 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
         return tokens
     
     # optimise RET followed by .return_x label
-    oldTokens = [([token for token in line]) for line in tokens]
-    tokens = RETlabel(tokens)
-    if oldTokens != tokens:
-        return tokens
+    #oldTokens = [([token for token in line]) for line in tokens]
+    #tokens = RETlabel(tokens)
+    #if oldTokens != tokens:
+    #    return tokens
     
     # shortcut JMP to RET
     oldTokens = [([token for token in line]) for line in tokens]
@@ -3699,6 +3838,18 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
     # check for OUT instructions
     oldTokens = [([token for token in line]) for line in tokens]
     tokens = checkForOUT(tokens)
+    if oldTokens != tokens:
+        return tokens
+
+    # trace stack values
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = projectPSH(tokens)
+    if oldTokens != tokens:
+        return tokens
+
+    # remove repeating sections of code
+    oldTokens = [([token for token in line]) for line in tokens]
+    tokens = findRepeatingCode(tokens)
     if oldTokens != tokens:
         return tokens
 
