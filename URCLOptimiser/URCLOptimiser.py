@@ -839,7 +839,7 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
         """
         
         for index, line in enumerate(tokens):
-            if line[0] in ("IMM", "MOV"):
+            if line[0] == "IMM":
                 if line[1] != "0":
                     register = line[1]
                     immediate = line[2]
