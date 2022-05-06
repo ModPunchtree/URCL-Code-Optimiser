@@ -1,45 +1,42 @@
-
-mov r1 .msg
-cal .strlen
-cal .printStr
-hlt
-.msg
-DW ['t' 'e' 's' 't']
-DW 0
-.print
-imm r2 0
-.printLoop
-llod r3 r1 r2 
-brz .printEnd r3
-out %TEXT r3
-inc r2 r2
-jmp .printLoop
-.printEnd
-ret
-.println
-psh r1
-.printlnNewLineMessage
-cal .print
-imm r1 .printlnNewLineMessage
-cal .print
-pop r1
-ret
-.printStr
-imm r3 0
-.printStrLoop
-llod r4 r1 r3
-out %TEXT r4
-inc r3 r3
-bre .printStrEnd r3 r2
-jmp .printStrLoop
-.printStrEnd
-ret
-.strlen
-imm r2 0
-.strlenLoop
-llod r4 r1 r2
-brz .strlenEnd r4
-inc r2 r2
-jmp .strlenLoop
-.strlenEnd
-ret
+JMP .End_recursiveFibonacci_global
+.recursiveFibonacci_global
+INC SP SP
+POP R1
+SUB SP SP 2
+SETL R2 R1 2
+BRZ .elseStart_2 R2
+INC SP SP
+STR SP R1
+DEC SP SP
+RET
+.elseStart_2
+DEC R2 R1
+PSH R1
+PSH R2
+PSH R2
+CAL .recursiveFibonacci_global
+POP R2
+INC SP SP
+POP R1
+SUB R3 R1 2
+PSH R1
+PSH R2
+PSH R3
+PSH R3
+CAL .recursiveFibonacci_global
+POP R3
+INC SP SP
+POP R2
+POP R1
+ADD R2 R2 R3
+INC SP SP
+STR SP R2
+DEC SP SP
+RET
+.End_recursiveFibonacci_global
+IMM R2 13
+PSH 13
+CAL .recursiveFibonacci_global
+POP R2
+OUT %NUMB R2
+HLT

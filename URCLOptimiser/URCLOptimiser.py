@@ -918,21 +918,21 @@ def recursiveOptimisations(tokens: list, BITS: int) -> list:
                 if line2[0] == "BRZ":
                     if register == line2[2]:
                         if line[0] == "SETE":
-                            tokens[index + 1] = ["BNE", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BNE", line2[1], line[2], line[3]]
                         elif line[0] == "SETNE":
-                            tokens[index + 1] = ["BRE", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BRE", line2[1], line[2], line[3]]
                         elif line[0] == "SETG":
-                            tokens[index + 1] = ["BLE", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BLE", line2[1], line[2], line[3]]
                         elif line[0] == "SETL":
-                            tokens[index + 1] = ["BGE", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BGE", line2[1], line[2], line[3]]
                         elif line[0] == "SETGE":
-                            tokens[index + 1] = ["BRL", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BRL", line2[1], line[2], line[3]]
                         elif line[0] == "SETLE":
-                            tokens[index + 1] = ["BRG", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BRG", line2[1], line[2], line[3]]
                         elif line[0] == "SETC":
-                            tokens[index + 1] = ["BNC", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BNC", line2[1], line[2], line[3]]
                         elif line[0] == "SETNC":
-                            tokens[index + 1] = ["BRC", line[1], line[2], line[3]]
+                            tokens[index + 1] = ["BRC", line2[1], line[2], line[3]]
                 if line2[0] == "BNZ":
                     if register == line2[2]:
                         if line[0] == "SETE":
@@ -3903,6 +3903,7 @@ def URCLOptimiser(tokens: list, rawHeaders: tuple) -> tuple:
     while tokens != oldTokens:
         oldTokens = [([token for token in line]) for line in tokens]
         tokens = recursiveOptimisations(tokens, rawHeaders[0])
+        hi = 1
 
     # calculate optimsied headers
     headers = calculateHeaders(tokens, rawHeaders)
